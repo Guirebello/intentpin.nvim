@@ -7,7 +7,7 @@ IntentPin keeps notes outside your repository, follows selected code with extmar
 > [!NOTE]
 > IntentPin.nvim is currently an alpha. The storage format is versioned, but may receive migrations before 1.0.
 >
-> This worktree contains the **virtual-lines hover experiment**. Hovered comments take screen rows below the selected range and never cover source code.
+> This worktree contains both hover renderers. `virtual_lines` is the default and never covers source code; `floating_window` is available as a compact alternative.
 
 ## Requirements
 
@@ -29,6 +29,9 @@ return {
     event = { "BufReadPost", "BufNewFile" },
     cmd = "IntentPin",
     opts = {
+      hover = {
+        mode = "virtual_lines", -- or "floating_window"
+      },
       editor = {
         spell = true,
         spelllang = "pt_br,en_us",
@@ -70,7 +73,7 @@ After publishing the repository, replace `dir` with:
 
 Spellcheck in the note editor is disabled by default. Enable it with `editor.spell = true`; optionally set `editor.spelllang` to the languages Neovim should use. While the editor is open, native spell commands such as `]s`, `[s`, and `z=` remain available.
 
-By default, the selected range gets only a gutter sign. `:IntentPin hover` temporarily highlights the exact range and inserts a comment card below it using virtual lines. Source code is shifted visually rather than covered, and the card disappears when the cursor moves, Insert mode starts, or the command is repeated.
+By default, the selected range gets only a gutter sign. `:IntentPin hover` temporarily highlights the exact range and shows its comment with the configured renderer. The comment disappears when the cursor moves, Insert mode starts, or the command is repeated.
 
 Blockwise visual selections are intentionally rejected for now because a rectangular selection cannot be represented safely by a single range.
 
@@ -101,14 +104,14 @@ Blockwise visual selections are intentionally rejected for now because a rectang
 
 `copy all-absolute` ignores inclusion checkboxes, copies every note in the project, and emits full file paths. Every copy command uses the configured export instruction. To match the VSCode extension's custom-instruction behavior, set `export.instruction_language = "custom"` and write the opening prompt in `export.custom_instruction`; the file, selected-code (`|`), and note (`>`) sections keep their normal format.
 
-## Virtual-lines hover
+## Hover modes
 
-The hover deliberately avoids a floating window. It uses temporary extmarks for two things:
+Both modes temporarily highlight the selected characters with `IntentPinActiveRange` and leave `K` untouched for LSP hover.
 
-- `IntentPinActiveRange` highlights every selected character.
-- `virt_lines` renders a wrapped comment card immediately after the range without modifying the file or covering code.
+- `virtual_lines` renders a wrapped comment card after the selected range. It shifts screen rows without modifying the file and never covers source code.
+- `floating_window` renders a compact, non-focusable popup near the cursor. It uses less vertical space but may cover part of the editor while open.
 
-Use `<leader>ih` or `:IntentPin hover` while the cursor is inside a pinned range. `K` remains untouched for LSP hover. Use `:IntentPin inline hide` when you also want to hide persistent gutter signs.
+Choose the renderer with `hover.mode`, then use `<leader>ih` or `:IntentPin hover` while the cursor is inside a pinned range. Use `:IntentPin inline hide` when you also want to hide persistent gutter signs.
 
 ## Floating manager
 
@@ -147,7 +150,10 @@ require("intentpin").setup({
     priority = 120,
   },
   hover = {
+    mode = "virtual_lines", -- virtual_lines or floating_window
     width = 72,
+    max_height = 14, -- floating_window only
+    border = "rounded", -- floating_window only
   },
   editor = {
     width = 0.62,
@@ -203,4 +209,4 @@ Run the headless test suite:
 make test
 ```
 
-The tests cover export formatting, JSON persistence, re-anchoring, visual selection capture, note creation, gutter-only rendering, virtual-lines hover, editor mode changes, the NUI manager lifecycle, and command registration.
+The tests cover export formatting, JSON persistence, re-anchoring, visual selection capture, note creation, gutter-only rendering, both hover modes, editor mode changes, the NUI manager lifecycle, and command registration.

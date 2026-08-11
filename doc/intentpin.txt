@@ -24,7 +24,7 @@ Requires Neovim >= 0.11.2 and MunifTanjim/nui.nvim.
 >lua
   require("intentpin").setup({
     inline = { virtual_text = false, highlight_range = false },
-    hover = { width = 72 },
+    hover = { mode = "virtual_lines", width = 72 },
     editor = { spell = true, spelllang = "pt_br,en_us" },
     export = { instruction_language = "en" },
   })
@@ -54,7 +54,10 @@ or :q. Spellcheck is disabled by default.
 
                                                           *:IntentPin-hover*
 :IntentPin hover            Highlight the pinned range and show its comment in
-                            virtual lines without covering source code.
+                            the configured hover renderer.
+
+Hover modes: "virtual_lines" inserts temporary screen lines without covering
+source code; "floating_window" opens a compact popup near the cursor.
 
                                                          *:IntentPin-inline*
 :IntentPin inline {mode}    Control persistent gutter markers. Modes: show,

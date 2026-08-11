@@ -154,6 +154,17 @@ test("marks a note orphaned when its text disappears", function()
   equal(true, orphaned)
 end)
 
+test("validates the configured hover mode", function()
+  local config = require("intentpin.config")
+  local ok, err = pcall(config.setup, {
+    storage = { path = temp },
+    hover = { mode = "unknown" },
+  })
+  equal(false, ok)
+  truthy(tostring(err):find("hover.mode", 1, true))
+  config.setup({ storage = { path = temp } })
+end)
+
 test("captures a visual selection and creates a note", function()
   local project_dir = vim.fs.joinpath(temp, "selection-project")
   local source_dir = vim.fs.joinpath(project_dir, "src")
@@ -221,6 +232,17 @@ test("captures a visual selection and creates a note", function()
   vim.api.nvim_exec_autocmds("CursorMoved", { buffer = buf })
   equal(false, require("intentpin.ui.hover").is_open())
   equal(0, #vim.api.nvim_buf_get_extmarks(buf, hover_namespace, 0, -1, {}))
+
+  require("intentpin.config").get().hover.mode = "floating_window"
+  equal(true, require("intentpin.actions").hover())
+  truthy(require("intentpin.ui.hover").is_open())
+  hover_marks = vim.api.nvim_buf_get_extmarks(buf, hover_namespace, 0, -1, { details = true })
+  equal(1, #hover_marks)
+  equal(nil, hover_marks[1][4].virt_lines)
+  vim.api.nvim_exec_autocmds("CursorMoved", { buffer = buf })
+  equal(false, require("intentpin.ui.hover").is_open())
+  equal(0, #vim.api.nvim_buf_get_extmarks(buf, hover_namespace, 0, -1, {}))
+  require("intentpin.config").get().hover.mode = "virtual_lines"
   vim.api.nvim_buf_delete(buf, { force = true })
 end)
 

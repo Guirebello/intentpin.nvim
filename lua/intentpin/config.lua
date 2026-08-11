@@ -17,7 +17,10 @@ M.defaults = {
     priority = 120,
   },
   hover = {
+    mode = "virtual_lines",
     width = 72,
+    max_height = 14,
+    border = "rounded",
   },
   editor = {
     width = 0.62,
@@ -64,6 +67,10 @@ function M.setup(opts)
     and (type(M.options.editor.spelllang) ~= "string" or M.options.editor.spelllang == "")
   then
     error("IntentPin: editor.spelllang must be a non-empty string")
+  end
+
+  if not vim.tbl_contains({ "virtual_lines", "floating_window" }, M.options.hover.mode) then
+    error("IntentPin: hover.mode must be virtual_lines or floating_window")
   end
 
   return M.options
