@@ -96,11 +96,25 @@ test("exports sorted compact notes and multiline comments", function()
   })
   local output = exporter.format("/work/project", { note(), second }, { instruction_language = "pt-BR" })
   equal(
-    "Altere os trechos indicados. Ajuste código relacionado somente se necessário.\n\n"
+    "Faça as alterações indicadas e responda às perguntas. Altere código somente quando necessário para atender a um pedido de mudança.\n\n"
       .. "src/alpha.lua:1\n| alpha\n> First line\n> Second line\n\n"
       .. "src/example.lua:2\n| target\n> Change this\n",
     output
   )
+end)
+
+test("matches the VSCode built-in export instructions", function()
+  local expected = {
+    ["pt-BR"] = "Faça as alterações indicadas e responda às perguntas. Altere código somente quando necessário para atender a um pedido de mudança.",
+    en = "Make the indicated changes and answer any questions. Change code only when necessary to fulfill a requested change.",
+    es = "Realiza los cambios indicados y responde las preguntas. Modifica código solo cuando sea necesario para cumplir un cambio solicitado.",
+  }
+  for language, instruction in pairs(expected) do
+    local output = require("intentpin.export").format("/work/project", { note() }, {
+      instruction_language = language,
+    })
+    truthy(vim.startswith(output, instruction .. "\n\n"), "unexpected " .. language .. " instruction")
+  end
 end)
 
 test("supports absolute paths and omitted selected text", function()

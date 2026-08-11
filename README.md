@@ -205,7 +205,7 @@ Run `:checkhealth intentpin` to verify Neovim, NUI, storage, and clipboard suppo
 ## Export format
 
 ```text
-Change the indicated code sections. Adjust related code only when necessary.
+Make the indicated changes and answer any questions. Change code only when necessary to fulfill a requested change.
 
 src/auth/login.ts:14-15
 | const session = await getSession(token)

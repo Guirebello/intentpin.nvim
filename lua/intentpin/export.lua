@@ -4,9 +4,9 @@ local util = require("intentpin.util")
 local M = {}
 
 local instructions = {
-  ["pt-BR"] = "Altere os trechos indicados. Ajuste código relacionado somente se necessário.",
-  en = "Change the indicated code sections. Adjust related code only when necessary.",
-  es = "Modifica los fragmentos de código indicados. Ajusta el código relacionado solo cuando sea necesario.",
+  ["pt-BR"] = "Faça as alterações indicadas e responda às perguntas. Altere código somente quando necessário para atender a um pedido de mudança.",
+  en = "Make the indicated changes and answer any questions. Change code only when necessary to fulfill a requested change.",
+  es = "Realiza los cambios indicados y responde las preguntas. Modifica código solo cuando sea necesario para cumplir un cambio solicitado.",
 }
 
 ---@param value string
