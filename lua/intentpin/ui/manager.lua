@@ -1,5 +1,6 @@
 local anchor = require("intentpin.anchor")
 local config = require("intentpin.config")
+local help = require("intentpin.ui.help")
 local store = require("intentpin.store")
 local util = require("intentpin.util")
 
@@ -176,6 +177,7 @@ function M.close()
   end
   local current = ui
   ui = nil
+  help.close()
   if current.layout then
     current.layout:unmount()
   end
@@ -247,7 +249,7 @@ function M.open(project_root, opts)
       Layout.Box(preview, { size = direction == "row" and "56%" or "54%" }),
     }, { dir = direction })
   else
-    box = Layout.Box(list, { size = "100%" })
+    box = Layout.Box({ Layout.Box(list, { size = "100%" }) })
   end
   local layout = Layout({ position = "50%", size = { width = width, height = height } }, box)
   ui = {
@@ -289,6 +291,12 @@ function M.open(project_root, opts)
       store.toggle(project_root, id)
     end)
   end, { noremap = true, nowait = true })
+  list:map("n", "a", function()
+    store.set_all_included(project_root, true)
+  end, { noremap = true, nowait = true })
+  list:map("n", "u", function()
+    store.set_all_included(project_root, false)
+  end, { noremap = true, nowait = true })
   list:map("n", "e", function()
     with_current(function(id)
       require("intentpin.actions").edit(project_root, id, true)
@@ -325,10 +333,7 @@ function M.open(project_root, opts)
     M.open(project_root, { focus_id = id, preview = not show_preview, force = true })
   end, { noremap = true, nowait = true })
   list:map("n", "?", function()
-    util.notify(
-      "<CR> jump · Space include · e edit · d delete · D clear · y current · Y checked · "
-        .. "gY checked absolute · A all · p preview · r refresh · q close"
-    )
+    help.open(list.winid)
   end, { noremap = true, nowait = true })
 
   vim.api.nvim_create_autocmd("CursorMoved", {

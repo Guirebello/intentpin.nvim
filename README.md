@@ -119,6 +119,8 @@ Choose the renderer with `hover.mode`, then use `<leader>ih` or `:IntentPin hove
 | --- | --- |
 | `<CR>` | Jump to the note's code |
 | `<Space>` | Include or exclude the note from checked exports |
+| `a` | Include every note in checked exports |
+| `u` | Exclude every note from checked exports |
 | `e` | Edit the note |
 | `d` | Delete the note |
 | `D` | Delete every note in the project |
@@ -128,10 +130,10 @@ Choose the renderer with `hover.mode`, then use `<leader>ih` or `:IntentPin hove
 | `A` | Copy every note with relative paths |
 | `p` | Toggle the preview pane |
 | `r` | Refresh and re-anchor loaded files |
-| `?` | Show key help |
+| `?` | Open the persistent key-help buffer |
 | `q` / `<Esc>` | Close |
 
-The manager uses a side-by-side layout on wide screens and a stacked layout on narrower screens.
+The manager uses a side-by-side layout on wide screens and a stacked layout on narrower screens. Key help opens as a focused, scrollable buffer and remains visible until `?`, `q`, or `<Esc>` closes it.
 
 ## Configuration
 
@@ -161,6 +163,7 @@ require("intentpin").setup({
     border = "rounded",
     spell = false,
     spelllang = nil, -- for example: "pt_br,en_us"
+    diagnostics = false, -- markdownlint/LSP diagnostics in the note editor
   },
   manager = {
     width = 0.88,

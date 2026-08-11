@@ -136,6 +136,22 @@ test("persists, reloads, updates, and removes notes", function()
   equal(0, #store.list(root))
 end)
 
+test("includes and excludes every note in one operation", function()
+  local store = require("intentpin.store")
+  local root = "/work/intentpin-bulk-inclusion-project"
+  store.reset()
+  store.add(root, note({ id = "bulk-1", included = true }))
+  store.add(root, note({ id = "bulk-2", included = false }))
+
+  store.set_all_included(root, true)
+  equal(true, store.get(root, "bulk-1").included)
+  equal(true, store.get(root, "bulk-2").included)
+
+  store.set_all_included(root, false)
+  equal(false, store.get(root, "bulk-1").included)
+  equal(false, store.get(root, "bulk-2").included)
+end)
+
 test("reanchors moved text using surrounding context", function()
   local range, orphaned, moved = require("intentpin.anchor").resolve(
     { "header", "before", "target", "after" },
@@ -317,12 +333,78 @@ test("configures spellcheck in the note editor", function()
   vim.wait(20)
 end)
 
+test("configures diagnostics in the note editor", function()
+  local config = require("intentpin.config")
+  local editor = require("intentpin.ui.editor")
+
+  config.setup({ storage = { path = temp }, editor = { diagnostics = false } })
+  editor.open({
+    title = "Editor diagnostics disabled test",
+    on_submit = function() end,
+  })
+  equal(false, vim.diagnostic.is_enabled({ bufnr = vim.api.nvim_get_current_buf() }))
+  vim.cmd.stopinsert()
+  vim.api.nvim_feedkeys("q", "x", false)
+  vim.wait(20)
+
+  config.setup({ storage = { path = temp }, editor = { diagnostics = true } })
+  editor.open({
+    title = "Editor diagnostics enabled test",
+    on_submit = function() end,
+  })
+  equal(true, vim.diagnostic.is_enabled({ bufnr = vim.api.nvim_get_current_buf() }))
+  vim.cmd.stopinsert()
+  vim.api.nvim_feedkeys("q", "x", false)
+  vim.wait(20)
+end)
+
 test("opens and closes the NUI manager", function()
   local manager = require("intentpin.ui.manager")
   manager.open("/work/empty-project", { preview = true })
   truthy(manager.is_open())
   manager.close()
   equal(false, manager.is_open())
+end)
+
+test("opens persistent manager help without a preview pane", function()
+  local manager = require("intentpin.ui.manager")
+  local help = require("intentpin.ui.help")
+  manager.open("/work/help-project", { preview = false, force = true })
+  truthy(manager.is_open())
+
+  vim.api.nvim_feedkeys("?", "x", false)
+  vim.wait(50, function()
+    return help.is_open()
+  end)
+  truthy(help.is_open(), "? should open the manager help buffer")
+
+  local help_buf
+  local list_buf
+  for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+    if vim.api.nvim_buf_is_valid(buf) then
+      if vim.bo[buf].filetype == "intentpin-help" then
+        help_buf = buf
+      elseif vim.bo[buf].filetype == "intentpin" then
+        list_buf = buf
+      end
+    end
+  end
+  truthy(help_buf, "manager help buffer was not found")
+  truthy(list_buf, "manager list buffer was not found")
+  local help_zindex = vim.api.nvim_win_get_config(vim.fn.bufwinid(help_buf)).zindex
+  local manager_zindex = vim.api.nvim_win_get_config(vim.fn.bufwinid(list_buf)).zindex
+  truthy(help_zindex > manager_zindex, "manager help should render above the manager")
+  local lines = vim.api.nvim_buf_get_lines(help_buf, 0, -1, false)
+  truthy(vim.tbl_contains(lines, "Navigation"))
+  truthy(vim.tbl_contains(lines, "Export"))
+
+  vim.api.nvim_feedkeys("?", "x", false)
+  vim.wait(50, function()
+    return not help.is_open()
+  end)
+  equal(false, help.is_open())
+  truthy(manager.is_open(), "closing help should return to the manager")
+  manager.close()
 end)
 
 test("shows orphan warnings beside manager checkboxes", function()

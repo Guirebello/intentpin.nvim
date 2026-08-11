@@ -182,6 +182,23 @@ function M.toggle(project_root, id)
 end
 
 ---@param project_root string
+---@param included boolean
+function M.set_all_included(project_root, included)
+  local changed = false
+  local updated_at = util.timestamp()
+  for _, note in ipairs(M.list(project_root)) do
+    if note.included ~= included then
+      note.included = included
+      note.updated_at = updated_at
+      changed = true
+    end
+  end
+  if changed then
+    M.save(project_root)
+  end
+end
+
+---@param project_root string
 ---@param ids string[]
 function M.remove(project_root, ids)
   local remove = {}

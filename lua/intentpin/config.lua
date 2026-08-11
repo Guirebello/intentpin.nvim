@@ -28,6 +28,7 @@ M.defaults = {
     border = "rounded",
     spell = false,
     spelllang = nil,
+    diagnostics = false,
   },
   manager = {
     width = 0.88,
@@ -61,6 +62,9 @@ function M.setup(opts)
 
   if type(M.options.editor.spell) ~= "boolean" then
     error("IntentPin: editor.spell must be a boolean")
+  end
+  if type(M.options.editor.diagnostics) ~= "boolean" then
+    error("IntentPin: editor.diagnostics must be a boolean")
   end
   if
     M.options.editor.spelllang ~= nil

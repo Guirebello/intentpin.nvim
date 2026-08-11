@@ -64,6 +64,7 @@ function M.open(opts)
   vim.bo[popup.bufnr].bufhidden = "wipe"
   vim.bo[popup.bufnr].swapfile = false
   vim.bo[popup.bufnr].filetype = "markdown"
+  vim.diagnostic.enable(editor_opts.diagnostics, { bufnr = popup.bufnr })
   vim.wo[popup.winid].spell = editor_opts.spell
   if editor_opts.spelllang then
     vim.bo[popup.bufnr].spelllang = editor_opts.spelllang
