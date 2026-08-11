@@ -112,6 +112,16 @@ test("supports absolute paths and omitted selected text", function()
   truthy(not output:find("| target", 1, true))
 end)
 
+test("prepends a custom prompt to exports with absolute paths", function()
+  local output = require("intentpin.export").format("/work/project", { note() }, {
+    absolute_paths = true,
+    instruction_language = "custom",
+    custom_instruction = "Implement every request below.",
+  })
+  truthy(vim.startswith(output, "Implement every request below.\n\n"))
+  truthy(output:find("/work/project/src/example.lua:2", 1, true))
+end)
+
 test("persists, reloads, updates, and removes notes", function()
   local store = require("intentpin.store")
   local root = "/work/intentpin-test-project"

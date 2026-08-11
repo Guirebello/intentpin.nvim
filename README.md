@@ -33,6 +33,10 @@ return {
         spell = true,
         spelllang = "pt_br,en_us",
       },
+      export = {
+        instruction_language = "custom",
+        custom_instruction = "Implemente as alterações descritas abaixo.",
+      },
     },
     keys = {
       { "<leader>ia", "<cmd>IntentPin add<cr>", mode = "x", desc = "Add IntentPin" },
@@ -41,6 +45,7 @@ return {
       { "<leader>is", "<cmd>IntentPin show<cr>", desc = "Show IntentPin at Cursor" },
       { "<leader>ie", "<cmd>IntentPin edit<cr>", desc = "Edit IntentPin at Cursor" },
       { "<leader>iy", "<cmd>IntentPin copy checked<cr>", desc = "Copy Checked IntentPins" },
+      { "<leader>iY", "<cmd>IntentPin copy all-absolute<cr>", desc = "Copy All IntentPins (Absolute Paths)" },
       { "]i", "<cmd>IntentPin next<cr>", desc = "Next IntentPin" },
       { "[i", "<cmd>IntentPin prev<cr>", desc = "Previous IntentPin" },
     },
@@ -93,6 +98,8 @@ Blockwise visual selections are intentionally rejected for now because a rectang
 ```
 
 `show`, `edit`, `delete`, and `copy current` operate on the note under the cursor. When ranges overlap, IntentPin asks which note to use.
+
+`copy all-absolute` ignores inclusion checkboxes, copies every note in the project, and emits full file paths. Every copy command uses the configured export instruction. To match the VSCode extension's custom-instruction behavior, set `export.instruction_language = "custom"` and write the opening prompt in `export.custom_instruction`; the file, selected-code (`|`), and note (`>`) sections keep their normal format.
 
 ## Virtual-lines hover
 
