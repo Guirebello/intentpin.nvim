@@ -45,6 +45,7 @@ return {
       { "<leader>ia", "<cmd>IntentPin add<cr>", mode = "x", desc = "Add IntentPin" },
       { "<leader>ii", "<cmd>IntentPin open<cr>", desc = "IntentPin Notes" },
       { "<leader>ih", "<cmd>IntentPin hover<cr>", desc = "Hover IntentPin" },
+      { "<leader>iH", "<cmd>IntentPin expand<cr>", desc = "Expand IntentPins in File" },
       { "<leader>is", "<cmd>IntentPin show<cr>", desc = "Show IntentPin at Cursor" },
       { "<leader>ie", "<cmd>IntentPin edit<cr>", desc = "Edit IntentPin at Cursor" },
       { "<leader>iy", "<cmd>IntentPin copy checked<cr>", desc = "Copy Checked IntentPins" },
@@ -75,6 +76,8 @@ Spellcheck in the note editor is disabled by default. Enable it with `editor.spe
 
 By default, the selected range gets only a gutter sign. `:IntentPin hover` temporarily highlights the exact range and shows its comment with the configured renderer. The comment disappears when the cursor moves, Insert mode starts, or the command is repeated.
 
+`:IntentPin expand` toggles every note in the current file as persistent virtual lines. Unlike hover, expanded notes remain visible while the cursor moves or Insert mode starts; run the command again to collapse them. `:IntentPin expand show` and `:IntentPin expand hide` are also available for explicit control.
+
 Blockwise visual selections are intentionally rejected for now because a rectangular selection cannot be represented safely by a single range.
 
 ## Commands
@@ -86,6 +89,10 @@ Blockwise visual selections are intentionally rejected for now because a rectang
 :IntentPin edit
 :IntentPin delete
 :IntentPin hover
+:IntentPin expand
+:IntentPin expand show
+:IntentPin expand hide
+:IntentPin reanchor
 :IntentPin inline show
 :IntentPin inline hide
 :IntentPin inline toggle
@@ -113,6 +120,8 @@ Both modes temporarily highlight the selected characters with `IntentPinActiveRa
 
 Choose the renderer with `hover.mode`, then use `<leader>ih` or `:IntentPin hover` while the cursor is inside a pinned range. Use `:IntentPin inline hide` when you also want to hide persistent gutter signs.
 
+Expanded-file mode always uses virtual lines, regardless of `hover.mode`, so showing several notes at once never covers source code. Toggle it with `<leader>iH` or `:IntentPin expand`.
+
 ## Floating manager
 
 | Key | Action |
@@ -129,7 +138,7 @@ Choose the renderer with `hover.mode`, then use `<leader>ih` or `:IntentPin hove
 | `gY` | Copy checked notes with absolute paths |
 | `A` | Copy every note with relative paths |
 | `p` | Toggle the preview pane |
-| `r` | Refresh and re-anchor loaded files |
+| `r` | Retry broken anchors in loaded files and show a result summary |
 | `?` | Open the persistent key-help buffer |
 | `q` / `<Esc>` | Close |
 

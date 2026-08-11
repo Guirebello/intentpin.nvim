@@ -228,6 +228,50 @@ function M.hover()
   return require("intentpin.ui.hover").toggle(0, notes)
 end
 
+---@param mode? "show"|"hide"|"toggle"
+---@return boolean?
+function M.expand(mode)
+  mode = mode or "toggle"
+  local project_root = project.current(0)
+  local buf = vim.api.nvim_get_current_buf()
+  local expanded = require("intentpin.ui.expanded")
+  local visible
+  if mode == "hide" then
+    expanded.close(buf)
+    visible = false
+  elseif mode == "show" then
+    visible = expanded.open(buf, project_root)
+  else
+    visible = expanded.toggle(buf, project_root)
+  end
+  if visible == nil then
+    util.notify("No IntentPin notes in the current file", vim.log.levels.WARN)
+    return nil
+  end
+  util.notify("IntentPin notes " .. (visible and "expanded" or "collapsed"))
+  return visible
+end
+
+---@param project_root? string
+---@return { checked: integer, recovered: integer, missing: integer, files: integer }
+function M.reanchor(project_root)
+  project_root = project_root or project.current(0)
+  local result = anchor.refresh_root(project_root)
+  require("intentpin.ui.expanded").refresh_root(project_root)
+  require("intentpin.ui.manager").refresh(project_root)
+  if result.checked == 0 then
+    util.notify("No loaded IntentPin notes to re-anchor", vim.log.levels.WARN)
+    return result
+  end
+  util.notify(string.format(
+    "Anchors: %d checked · %d recovered · %d still missing",
+    result.checked,
+    result.recovered,
+    result.missing
+  ))
+  return result
+end
+
 ---@param mode "show"|"hide"|"toggle"
 function M.inline(mode)
   local inline = require("intentpin.config").get().inline

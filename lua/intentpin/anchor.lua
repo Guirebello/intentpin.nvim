@@ -222,15 +222,46 @@ function M.attach(buf, project_root)
 end
 
 ---@param project_root string
+---@return { checked: integer, recovered: integer, missing: integer, files: integer }
 function M.refresh_root(project_root)
+  local previous = vim.deepcopy(statuses[project_root] or {})
+  local checked = {}
+  local files = {}
   for _, buf in ipairs(vim.api.nvim_list_bufs()) do
     if vim.api.nvim_buf_is_loaded(buf) and vim.api.nvim_buf_get_name(buf) ~= "" then
       local ok, candidate = pcall(project.for_path, vim.api.nvim_buf_get_name(buf))
       if ok and candidate == project_root then
+        local file_ok, file = pcall(project.relative, project_root, vim.api.nvim_buf_get_name(buf))
+        if file_ok then
+          files[file] = true
+          for _, note in ipairs(store.list(project_root)) do
+            if note.file == file then
+              checked[note.id] = true
+            end
+          end
+        end
         M.attach(buf, project_root)
       end
     end
   end
+
+  local result = {
+    checked = 0,
+    recovered = 0,
+    missing = 0,
+    files = vim.tbl_count(files),
+  }
+  for id in pairs(checked) do
+    result.checked = result.checked + 1
+    local orphaned = M.is_orphaned(project_root, id)
+    if previous[id] and not orphaned then
+      result.recovered = result.recovered + 1
+    end
+    if orphaned then
+      result.missing = result.missing + 1
+    end
+  end
+  return result
 end
 
 ---@param buf integer

@@ -53,6 +53,7 @@ function M.setup(opts)
 
   store.set_listener(function(project_root)
     anchor.refresh_root(project_root)
+    require("intentpin.ui.expanded").refresh_root(project_root)
     require("intentpin.ui.manager").refresh(project_root)
   end)
 

@@ -8,7 +8,7 @@ local entries = {
   { title = "Navigation" },
   { key = "<CR>", description = "Jump to the selected note" },
   { key = "p", description = "Toggle the preview pane" },
-  { key = "r", description = "Refresh and re-anchor loaded files" },
+  { key = "r", description = "Retry broken anchors in loaded files" },
   {},
   { title = "Notes" },
   { key = "<Space>", description = "Include or exclude the selected note" },

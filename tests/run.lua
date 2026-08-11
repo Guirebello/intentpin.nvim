@@ -170,6 +170,96 @@ test("marks a note orphaned when its text disappears", function()
   equal(true, orphaned)
 end)
 
+test("reports recovered and missing anchors in loaded files", function()
+  local project_dir = vim.fs.joinpath(temp, "reanchor-project")
+  local source_dir = vim.fs.joinpath(project_dir, "src")
+  vim.fn.mkdir(vim.fs.joinpath(project_dir, ".git"), "p")
+  vim.fn.mkdir(source_dir, "p")
+  require("intentpin.store").add(project_dir, note({ id = "reanchor-note" }))
+
+  local buf = vim.api.nvim_create_buf(true, false)
+  vim.api.nvim_buf_set_name(buf, vim.fs.joinpath(source_dir, "example.lua"))
+  vim.api.nvim_buf_set_lines(buf, 0, -1, false, { "before", "different", "after" })
+  vim.api.nvim_win_set_buf(0, buf)
+  local anchor = require("intentpin.anchor")
+  anchor.attach(buf, project_dir)
+  truthy(anchor.is_orphaned(project_dir, "reanchor-note"))
+
+  vim.api.nvim_buf_set_lines(buf, 1, 2, false, { "target" })
+  local notifications = {}
+  local original_notify = vim.notify
+  vim.notify = function(message)
+    notifications[#notifications + 1] = message
+  end
+  local ok, recovered = pcall(require("intentpin.actions").reanchor, project_dir)
+  vim.notify = original_notify
+  if not ok then
+    error(recovered)
+  end
+
+  equal({ checked = 1, recovered = 1, missing = 0, files = 1 }, recovered)
+  equal("Anchors: 1 checked · 1 recovered · 0 still missing", notifications[#notifications])
+  equal(false, anchor.is_orphaned(project_dir, "reanchor-note"))
+
+  vim.api.nvim_buf_set_lines(buf, 1, 2, false, { "different again" })
+  local missing = anchor.refresh_root(project_dir)
+  equal({ checked = 1, recovered = 0, missing = 1, files = 1 }, missing)
+  truthy(anchor.is_orphaned(project_dir, "reanchor-note"))
+  vim.api.nvim_buf_delete(buf, { force = true })
+end)
+
+test("expands every note in the current file until toggled", function()
+  local project_dir = vim.fs.joinpath(temp, "expanded-project")
+  local source_dir = vim.fs.joinpath(project_dir, "src")
+  vim.fn.mkdir(vim.fs.joinpath(project_dir, ".git"), "p")
+  vim.fn.mkdir(source_dir, "p")
+
+  local store = require("intentpin.store")
+  store.add(project_dir, note({ id = "expanded-1" }))
+  store.add(project_dir, note({
+    id = "expanded-2",
+    range = {
+      start = { line = 2, character = 0 },
+      ["end"] = { line = 2, character = 5 },
+    },
+    selected_text = "after",
+    context_before = { "target" },
+    context_after = {},
+    comment = "Check the final line",
+  }))
+
+  local buf = vim.api.nvim_create_buf(true, false)
+  vim.api.nvim_buf_set_name(buf, vim.fs.joinpath(source_dir, "example.lua"))
+  vim.api.nvim_buf_set_lines(buf, 0, -1, false, { "before", "target", "after" })
+  vim.api.nvim_win_set_buf(0, buf)
+  require("intentpin.anchor").attach(buf, project_dir)
+
+  local actions = require("intentpin.actions")
+  local expanded = require("intentpin.ui.expanded")
+  equal(true, actions.expand("toggle"))
+  truthy(expanded.is_open(buf))
+
+  local expanded_namespace = vim.api.nvim_get_namespaces()["intentpin-expanded"]
+  local extmarks = vim.api.nvim_buf_get_extmarks(buf, expanded_namespace, 0, -1, { details = true })
+  equal(4, #extmarks, "each note should have a range highlight and virtual lines")
+  local virtual_line_count = 0
+  for _, mark in ipairs(extmarks) do
+    if mark[4].virt_lines then
+      virtual_line_count = virtual_line_count + 1
+    end
+  end
+  equal(2, virtual_line_count)
+
+  vim.api.nvim_exec_autocmds("CursorMoved", { buffer = buf })
+  vim.api.nvim_exec_autocmds("InsertEnter", { buffer = buf })
+  truthy(expanded.is_open(buf), "expanded notes should stay open while editing")
+
+  equal(false, actions.expand("toggle"))
+  equal(false, expanded.is_open(buf))
+  equal(0, #vim.api.nvim_buf_get_extmarks(buf, expanded_namespace, 0, -1, {}))
+  vim.api.nvim_buf_delete(buf, { force = true })
+end)
+
 test("validates the configured hover mode", function()
   local config = require("intentpin.config")
   local ok, err = pcall(config.setup, {

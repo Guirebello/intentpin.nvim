@@ -9,6 +9,8 @@ local commands = {
   "edit",
   "delete",
   "hover",
+  "expand",
+  "reanchor",
   "inline",
   "next",
   "prev",
@@ -26,6 +28,7 @@ local copy_modes = {
 }
 
 local inline_modes = { "show", "hide", "toggle" }
+local expand_modes = { "show", "hide", "toggle" }
 
 ---@param callback fun()
 local function safely(callback)
@@ -54,6 +57,14 @@ local function execute(args)
     action.delete_at_cursor()
   elseif name == "hover" then
     action.hover()
+  elseif name == "expand" then
+    local mode = args.fargs[2] or "toggle"
+    if not vim.tbl_contains(expand_modes, mode) then
+      error("IntentPin: unknown expand mode: " .. mode)
+    end
+    action.expand(mode)
+  elseif name == "reanchor" then
+    action.reanchor()
   elseif name == "inline" then
     local mode = args.fargs[2] or "toggle"
     if not vim.tbl_contains(inline_modes, mode) then
@@ -89,6 +100,7 @@ local function complete(arglead, cmdline)
   local words = vim.split(cmdline, "%s+", { trimempty = true })
   local candidates = words[2] == "copy" and copy_modes
     or words[2] == "inline" and inline_modes
+    or words[2] == "expand" and expand_modes
     or commands
   return vim.tbl_filter(function(candidate)
     return candidate:sub(1, #arglead) == arglead
