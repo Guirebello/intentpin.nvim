@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Neovim ${{ matrix.neovim }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        neovim: [v0.11.2, stable]
+
+    steps:
+      - name: Check out IntentPin.nvim
+        uses: actions/checkout@v7
+
+      - name: Install Neovim
+        uses: rhysd/action-setup-vim@v1
+        with:
+          version: ${{ matrix.neovim }}
+          neovim: true
+
+      - name: Clone nui.nvim
+        run: git clone --depth=1 https://github.com/MunifTanjim/nui.nvim.git "$RUNNER_TEMP/nui.nvim"
+
+      - name: Run tests
+        run: make test
+        env:
+          INTENTPIN_NUI_PATH: ${{ runner.temp }}/nui.nvim
