@@ -462,6 +462,55 @@ test("configures diagnostics in the note editor", function()
   vim.wait(20)
 end)
 
+test("disables completion in the note editor by default", function()
+  local config = require("intentpin.config")
+  local editor = require("intentpin.ui.editor")
+  local previous_cmp = package.loaded["cmp"]
+  local cmp_enabled
+
+  package.loaded["cmp"] = {
+    setup = {
+      buffer = function(opts)
+        cmp_enabled = opts.enabled
+      end,
+    },
+    visible = function()
+      return false
+    end,
+  }
+
+  config.setup({ storage = { path = temp } })
+  editor.open({
+    title = "Editor completion disabled test",
+    on_submit = function() end,
+  })
+  local bufnr = vim.api.nvim_get_current_buf()
+  equal(false, vim.b[bufnr].completion)
+  if vim.fn.exists("+autocomplete") == 1 then
+    equal(false, vim.bo[bufnr].autocomplete)
+  end
+  equal("", vim.bo[bufnr].completefunc)
+  equal("", vim.bo[bufnr].omnifunc)
+  equal(false, cmp_enabled)
+  vim.cmd.stopinsert()
+  vim.api.nvim_feedkeys("q", "x", false)
+  vim.wait(20)
+
+  cmp_enabled = nil
+  config.setup({ storage = { path = temp }, editor = { completion = true } })
+  editor.open({
+    title = "Editor completion enabled test",
+    on_submit = function() end,
+  })
+  equal(nil, vim.b[vim.api.nvim_get_current_buf()].completion)
+  equal(nil, cmp_enabled, "enabled completion should preserve the user's completion configuration")
+  vim.cmd.stopinsert()
+  vim.api.nvim_feedkeys("q", "x", false)
+  vim.wait(20)
+
+  package.loaded["cmp"] = previous_cmp
+end)
+
 test("opens and closes the NUI manager", function()
   local manager = require("intentpin.ui.manager")
   manager.open("/work/empty-project", { preview = true })

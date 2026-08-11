@@ -4,6 +4,34 @@ local util = require("intentpin.util")
 local M = {}
 local active
 
+---@param bufnr integer
+local function disable_completion(bufnr)
+  if not vim.api.nvim_buf_is_valid(bufnr) then
+    return
+  end
+
+  -- blink.cmp respects this buffer variable, while the remaining options
+  -- disable Neovim's built-in completion sources for this scratch buffer.
+  vim.b[bufnr].completion = false
+  if vim.fn.exists("+autocomplete") == 1 then
+    vim.bo[bufnr].autocomplete = false
+  end
+  vim.bo[bufnr].completefunc = ""
+  vim.bo[bufnr].omnifunc = ""
+
+  -- nvim-cmp needs an explicit buffer-local override. Do not require it here:
+  -- completion plugins remain optional and may be loaded on InsertEnter.
+  local cmp = package.loaded["cmp"]
+  if type(cmp) == "table" and type(cmp.setup) == "table" and type(cmp.setup.buffer) == "function" then
+    vim.api.nvim_buf_call(bufnr, function()
+      cmp.setup.buffer({ enabled = false })
+      if type(cmp.visible) == "function" and cmp.visible() and type(cmp.abort) == "function" then
+        cmp.abort()
+      end
+    end)
+  end
+end
+
 local function dimensions()
   local opts = config.get().editor
   local width = math.min(vim.o.columns - 4, math.max(40, math.floor(vim.o.columns * opts.width)))
@@ -65,6 +93,20 @@ function M.open(opts)
   vim.bo[popup.bufnr].swapfile = false
   vim.bo[popup.bufnr].filetype = "markdown"
   vim.diagnostic.enable(editor_opts.diagnostics, { bufnr = popup.bufnr })
+  if not editor_opts.completion then
+    disable_completion(popup.bufnr)
+    vim.api.nvim_create_autocmd("InsertEnter", {
+      buffer = popup.bufnr,
+      once = true,
+      callback = function()
+        -- Let lazy-loaded completion plugins finish their InsertEnter handlers,
+        -- then apply the buffer-local override without loading them ourselves.
+        vim.schedule(function()
+          disable_completion(popup.bufnr)
+        end)
+      end,
+    })
+  end
   vim.wo[popup.winid].spell = editor_opts.spell
   if editor_opts.spelllang then
     vim.bo[popup.bufnr].spelllang = editor_opts.spelllang

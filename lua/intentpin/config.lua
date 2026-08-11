@@ -29,6 +29,7 @@ M.defaults = {
     spell = false,
     spelllang = nil,
     diagnostics = false,
+    completion = false,
   },
   manager = {
     width = 0.88,
@@ -65,6 +66,9 @@ function M.setup(opts)
   end
   if type(M.options.editor.diagnostics) ~= "boolean" then
     error("IntentPin: editor.diagnostics must be a boolean")
+  end
+  if type(M.options.editor.completion) ~= "boolean" then
+    error("IntentPin: editor.completion must be a boolean")
   end
   if
     M.options.editor.spelllang ~= nil
