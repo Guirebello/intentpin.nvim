@@ -3,6 +3,22 @@ local root = require("intentpin.root")
 
 local M = {}
 
+---@param mode string
+---@return boolean
+local function is_visual(mode)
+  return mode == "v" or mode == "V" or mode == "\22"
+end
+
+---@param left table
+---@param right table
+---@return table, table
+local function ordered(left, right)
+  if left[2] > right[2] or (left[2] == right[2] and left[3] > right[3]) then
+    return right, left
+  end
+  return left, right
+end
+
 ---@param line string
 ---@param column integer
 ---@return integer
@@ -39,15 +55,24 @@ function M.capture(buf)
     error("IntentPin: save the file before adding a note")
   end
 
-  local visual_mode = vim.fn.visualmode()
+  local current_mode = vim.api.nvim_get_mode().mode
+  local visual_mode = is_visual(current_mode) and current_mode or vim.fn.visualmode()
   if visual_mode == "\22" then
     error("IntentPin: blockwise visual selections are not supported yet")
   end
-  local start_mark = vim.fn.getpos("'<")
-  local end_mark = vim.fn.getpos("'>")
+  local start_mark
+  local end_mark
+  if is_visual(current_mode) then
+    start_mark = vim.fn.getpos("v")
+    end_mark = vim.fn.getcurpos()
+  else
+    start_mark = vim.fn.getpos("'<")
+    end_mark = vim.fn.getpos("'>")
+  end
   if start_mark[2] == 0 or end_mark[2] == 0 then
     error("IntentPin: select some code before adding a note")
   end
+  start_mark, end_mark = ordered(start_mark, end_mark)
 
   local start_row = start_mark[2] - 1
   local end_row = end_mark[2] - 1

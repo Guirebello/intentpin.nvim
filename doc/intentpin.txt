@@ -23,12 +23,16 @@ Requires Neovim >= 0.11.2 and MunifTanjim/nui.nvim.
 
 >lua
   require("intentpin").setup({
-    inline = { virtual_text = true },
+    inline = { virtual_text = false, highlight_range = false },
+    hover = { mode = "virtual_lines", width = 72 },
+    editor = { spell = true, spelllang = "pt_br,en_us" },
     export = { instruction_language = "en" },
   })
 <
 
 See the README for every option and a complete LazyVim plugin specification.
+The editor leaves Insert mode with <Esc> or <C-c> and closes explicitly with q
+or :q. Spellcheck is disabled by default.
 
 ==============================================================================
 3. COMMANDS                                              *intentpin-commands*
@@ -48,6 +52,17 @@ See the README for every option and a complete LazyVim plugin specification.
                                                          *:IntentPin-delete*
 :IntentPin delete           Delete the note at the cursor after confirmation.
 
+                                                          *:IntentPin-hover*
+:IntentPin hover            Highlight the pinned range and show its comment in
+                            the configured hover renderer.
+
+Hover modes: "virtual_lines" inserts temporary screen lines without covering
+source code; "floating_window" opens a compact popup near the cursor.
+
+                                                         *:IntentPin-inline*
+:IntentPin inline {mode}    Control persistent gutter markers. Modes: show,
+                            hide, toggle.
+
                                                            *:IntentPin-next*
 :IntentPin next             Jump to the next note, wrapping at the end.
 
@@ -57,6 +72,7 @@ See the README for every option and a complete LazyVim plugin specification.
                                                            *:IntentPin-copy*
 :IntentPin copy {mode}      Copy notes. Modes: checked, checked-absolute, all,
                             all-absolute, current, current-absolute.
+                            all-absolute ignores checkboxes and uses full paths.
 
                                                           *:IntentPin-clear*
 :IntentPin clear            Delete every note in the current project.
@@ -80,5 +96,14 @@ State is stored in:
   stdpath("state")/intentpin/<sha256-project-root>.json
 
 No IntentPin files are written into the project itself.
+
+The instruction prepended to copied notes can be customized with:
+
+>lua
+  export = {
+    instruction_language = "custom",
+    custom_instruction = "Implemente as alterações descritas abaixo.",
+  }
+<
 
 vim:tw=78:ts=8:noet:ft=help:norl:

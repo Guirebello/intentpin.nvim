@@ -6,6 +6,8 @@ IntentPin keeps notes outside your repository, follows selected code with extmar
 
 > [!NOTE]
 > IntentPin.nvim is currently an alpha. The storage format is versioned, but may receive migrations before 1.0.
+>
+> IntentPin contains both hover renderers. `virtual_lines` is the default and never covers source code; `floating_window` is available as a compact alternative.
 
 ## Requirements
 
@@ -24,13 +26,29 @@ return {
     dependencies = {
       "MunifTanjim/nui.nvim",
     },
-    opts = {},
+    event = { "BufReadPost", "BufNewFile" },
+    cmd = "IntentPin",
+    opts = {
+      hover = {
+        mode = "virtual_lines", -- or "floating_window"
+      },
+      editor = {
+        spell = true,
+        spelllang = "pt_br,en_us",
+      },
+      export = {
+        instruction_language = "custom",
+        custom_instruction = "Implemente as alterações descritas abaixo.",
+      },
+    },
     keys = {
       { "<leader>ia", "<cmd>IntentPin add<cr>", mode = "x", desc = "Add IntentPin" },
       { "<leader>ii", "<cmd>IntentPin open<cr>", desc = "IntentPin Notes" },
+      { "<leader>ih", "<cmd>IntentPin hover<cr>", desc = "Hover IntentPin" },
       { "<leader>is", "<cmd>IntentPin show<cr>", desc = "Show IntentPin at Cursor" },
       { "<leader>ie", "<cmd>IntentPin edit<cr>", desc = "Edit IntentPin at Cursor" },
       { "<leader>iy", "<cmd>IntentPin copy checked<cr>", desc = "Copy Checked IntentPins" },
+      { "<leader>iY", "<cmd>IntentPin copy all-absolute<cr>", desc = "Copy All IntentPins (Absolute Paths)" },
       { "]i", "<cmd>IntentPin next<cr>", desc = "Next IntentPin" },
       { "[i", "<cmd>IntentPin prev<cr>", desc = "Previous IntentPin" },
     },
@@ -51,7 +69,13 @@ After publishing the repository, replace `dir` with:
 3. Save with `<C-s>`.
 4. Open `:IntentPin open` to review, include, edit, delete, navigate, and export notes.
 
-The selected range gets an inline sign and a one-line summary. Both are configurable. Blockwise visual selections are intentionally rejected for now because a rectangular selection cannot be represented safely by a single range.
+`<Esc>` and `<C-c>` in the note editor only return to Normal mode. Close explicitly with `q` or `:q`.
+
+Spellcheck in the note editor is disabled by default. Enable it with `editor.spell = true`; optionally set `editor.spelllang` to the languages Neovim should use. While the editor is open, native spell commands such as `]s`, `[s`, and `z=` remain available.
+
+By default, the selected range gets only a gutter sign. `:IntentPin hover` temporarily highlights the exact range and shows its comment with the configured renderer. The comment disappears when the cursor moves, Insert mode starts, or the command is repeated.
+
+Blockwise visual selections are intentionally rejected for now because a rectangular selection cannot be represented safely by a single range.
 
 ## Commands
 
@@ -61,6 +85,10 @@ The selected range gets an inline sign and a one-line summary. Both are configur
 :IntentPin show
 :IntentPin edit
 :IntentPin delete
+:IntentPin hover
+:IntentPin inline show
+:IntentPin inline hide
+:IntentPin inline toggle
 :IntentPin next
 :IntentPin prev
 :IntentPin clear
@@ -73,6 +101,17 @@ The selected range gets an inline sign and a one-line summary. Both are configur
 ```
 
 `show`, `edit`, `delete`, and `copy current` operate on the note under the cursor. When ranges overlap, IntentPin asks which note to use.
+
+`copy all-absolute` ignores inclusion checkboxes, copies every note in the project, and emits full file paths. Every copy command uses the configured export instruction. To match the VSCode extension's custom-instruction behavior, set `export.instruction_language = "custom"` and write the opening prompt in `export.custom_instruction`; the file, selected-code (`|`), and note (`>`) sections keep their normal format.
+
+## Hover modes
+
+Both modes temporarily highlight the selected characters with `IntentPinActiveRange` and leave `K` untouched for LSP hover.
+
+- `virtual_lines` renders a wrapped comment card after the selected range. It shifts screen rows without modifying the file and never covers source code.
+- `floating_window` renders a compact, non-focusable popup near the cursor. It uses less vertical space but may cover part of the editor while open.
+
+Choose the renderer with `hover.mode`, then use `<leader>ih` or `:IntentPin hover` while the cursor is inside a pinned range. Use `:IntentPin inline hide` when you also want to hide persistent gutter signs.
 
 ## Floating manager
 
@@ -105,15 +144,23 @@ require("intentpin").setup({
     enabled = true,
     sign = "󰆉",
     orphan_sign = "?",
-    virtual_text = true,
+    virtual_text = false,
     max_length = 60,
-    highlight_range = true,
+    highlight_range = false,
     priority = 120,
+  },
+  hover = {
+    mode = "virtual_lines", -- virtual_lines or floating_window
+    width = 72,
+    max_height = 14, -- floating_window only
+    border = "rounded", -- floating_window only
   },
   editor = {
     width = 0.62,
     height = 0.32,
     border = "rounded",
+    spell = false,
+    spelllang = nil, -- for example: "pt_br,en_us"
   },
   manager = {
     width = 0.88,
@@ -162,4 +209,4 @@ Run the headless test suite:
 make test
 ```
 
-The tests cover export formatting, JSON persistence, re-anchoring, visual selection capture, note creation, the NUI manager lifecycle, and command registration.
+The tests cover export formatting, JSON persistence, re-anchoring, visual selection capture, note creation, gutter-only rendering, both hover modes, editor mode changes, the NUI manager lifecycle, and command registration.

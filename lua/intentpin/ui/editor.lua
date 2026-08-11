@@ -21,6 +21,11 @@ function M.close()
   end
 end
 
+---@return boolean
+function M.is_open()
+  return active ~= nil
+end
+
 ---@param opts { title: string, initial?: string, on_submit: fun(value: string), on_cancel?: fun() }
 function M.open(opts)
   M.close()
@@ -29,6 +34,7 @@ function M.open(opts)
     error("IntentPin: nui.nvim is required for the note editor")
   end
 
+  local editor_opts = config.get().editor
   local width, height = dimensions()
   local popup = Popup({
     enter = true,
@@ -37,11 +43,11 @@ function M.open(opts)
     position = "50%",
     size = { width = width, height = height },
     border = {
-      style = config.get().editor.border,
+      style = editor_opts.border,
       text = {
         top = " " .. opts.title .. " ",
         top_align = "center",
-        bottom = " <C-s> save · q cancel ",
+        bottom = " <C-s> save · q/:q cancel · <Esc>/<C-c> normal mode ",
         bottom_align = "center",
       },
     },
@@ -58,6 +64,10 @@ function M.open(opts)
   vim.bo[popup.bufnr].bufhidden = "wipe"
   vim.bo[popup.bufnr].swapfile = false
   vim.bo[popup.bufnr].filetype = "markdown"
+  vim.wo[popup.winid].spell = editor_opts.spell
+  if editor_opts.spelllang then
+    vim.bo[popup.bufnr].spelllang = editor_opts.spelllang
+  end
   vim.api.nvim_buf_set_lines(popup.bufnr, 0, -1, false, util.lines(opts.initial or ""))
   vim.bo[popup.bufnr].modified = false
 
@@ -95,11 +105,20 @@ function M.open(opts)
     vim.schedule(submit)
   end, { noremap = true, nowait = true })
   popup:map("n", "q", cancel, { noremap = true, nowait = true })
-  popup:map("n", "<Esc>", cancel, { noremap = true, nowait = true })
-  popup:map("i", "<C-c>", function()
-    vim.cmd.stopinsert()
-    vim.schedule(cancel)
-  end, { noremap = true, nowait = true })
+
+  vim.api.nvim_create_autocmd("BufWipeout", {
+    buffer = popup.bufnr,
+    once = true,
+    callback = function()
+      if not finished then
+        finished = true
+        active = nil
+        if opts.on_cancel then
+          vim.schedule(opts.on_cancel)
+        end
+      end
+    end,
+  })
 
   vim.cmd.startinsert()
 end

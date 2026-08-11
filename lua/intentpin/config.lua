@@ -11,15 +11,23 @@ M.defaults = {
     enabled = true,
     sign = "󰆉",
     orphan_sign = "?",
-    virtual_text = true,
+    virtual_text = false,
     max_length = 60,
-    highlight_range = true,
+    highlight_range = false,
     priority = 120,
+  },
+  hover = {
+    mode = "virtual_lines",
+    width = 72,
+    max_height = 14,
+    border = "rounded",
   },
   editor = {
     width = 0.62,
     height = 0.32,
     border = "rounded",
+    spell = false,
+    spelllang = nil,
   },
   manager = {
     width = 0.88,
@@ -49,6 +57,20 @@ function M.setup(opts)
 
   if type(M.options.storage.path) ~= "string" or M.options.storage.path == "" then
     error("IntentPin: storage.path must be a non-empty string")
+  end
+
+  if type(M.options.editor.spell) ~= "boolean" then
+    error("IntentPin: editor.spell must be a boolean")
+  end
+  if
+    M.options.editor.spelllang ~= nil
+    and (type(M.options.editor.spelllang) ~= "string" or M.options.editor.spelllang == "")
+  then
+    error("IntentPin: editor.spelllang must be a non-empty string")
+  end
+
+  if not vim.tbl_contains({ "virtual_lines", "floating_window" }, M.options.hover.mode) then
+    error("IntentPin: hover.mode must be virtual_lines or floating_window")
   end
 
   return M.options

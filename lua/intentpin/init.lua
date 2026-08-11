@@ -13,6 +13,10 @@ local function highlights()
     IntentPinOrphan = { link = "DiagnosticWarn" },
     IntentPinVirtualText = { link = "Comment" },
     IntentPinRange = { link = "LspReferenceText" },
+    IntentPinActiveRange = { link = "Visual" },
+    IntentPinHoverBorder = { link = "FloatBorder" },
+    IntentPinHoverTitle = { link = "Title" },
+    IntentPinHoverText = { link = "NormalFloat" },
   }
   for name, value in pairs(groups) do
     value.default = true
@@ -36,6 +40,17 @@ function M.setup(opts)
   local anchor = require("intentpin.anchor")
   local root = require("intentpin.root")
   local store = require("intentpin.store")
+  local function attach(buf)
+    if
+      vim.api.nvim_buf_is_valid(buf)
+      and vim.api.nvim_buf_is_loaded(buf)
+      and vim.bo[buf].buftype == ""
+      and vim.api.nvim_buf_get_name(buf) ~= ""
+    then
+      anchor.attach(buf, root.current(buf))
+    end
+  end
+
   store.set_listener(function(project_root)
     anchor.refresh_root(project_root)
     require("intentpin.ui.manager").refresh(project_root)
@@ -46,9 +61,7 @@ function M.setup(opts)
     group = group,
     callback = function(event)
       safely(function()
-        if vim.bo[event.buf].buftype == "" and vim.api.nvim_buf_get_name(event.buf) ~= "" then
-          anchor.attach(event.buf, root.current(event.buf))
-        end
+        attach(event.buf)
       end)
     end,
   })
@@ -60,6 +73,17 @@ function M.setup(opts)
       end)
     end,
   })
+
+  for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+    safely(function()
+      attach(buf)
+    end)
+  end
+end
+
+---@return boolean
+function M.hover()
+  return require("intentpin.actions").hover()
 end
 
 return M
