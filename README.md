@@ -20,7 +20,7 @@ While developing locally, create `lua/plugins/intentpin.lua` in your LazyVim con
 ```lua
 return {
   {
-    dir = "/home/guilherme/projects/intentpin.nvim",
+    dir = "/home/guilherme/projects/intentpin.nvim/main",
     dependencies = {
       "MunifTanjim/nui.nvim",
     },
