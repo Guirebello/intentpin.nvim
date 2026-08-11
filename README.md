@@ -1,13 +1,36 @@
 # IntentPin.nvim
 
-Turn exact code selections into persistent, editable change requests for AI coding assistants.
+[Português (Brasil)](README.pt-BR.md)
 
-IntentPin keeps notes outside your repository, follows selected code with extmarks, presents every note in a floating manager, and exports a compact prompt for Codex, Claude Code, ChatGPT, Copilot, or any other text-based assistant.
+Turn exact code selections into persistent, editable context for AI coding assistants.
+
+IntentPin lets you select code, attach a note or question, and keep that intent connected to the source while the file changes. Review everything in Neovim, choose what belongs in the next request, then copy a compact prompt for Codex, Claude Code, ChatGPT, Copilot, or any other text-based assistant.
+
+## Demo
+
+[![IntentPin.nvim workflow demo](intentpin-neovim-demo.png)](https://github.com/Guirebello/intentpin.nvim/raw/refs/heads/main/intentpin-neovim-demo.mp4)
+
+[▶ Watch the complete workflow demo (1:09)](https://github.com/Guirebello/intentpin.nvim/raw/refs/heads/main/intentpin-neovim-demo.mp4)
 
 > [!NOTE]
-> IntentPin.nvim is currently an alpha. The storage format is versioned, but may receive migrations before 1.0.
+> IntentPin.nvim is experimental. Notes are stored in Neovim's state directory, and the stored-note format may change before version 1.0.
 >
 > IntentPin contains both hover renderers. `virtual_lines` is the default and never covers source code; `floating_window` is available as a compact alternative.
+
+## Why IntentPin?
+
+AI coding tools work better with precise context, but collecting file paths, line ranges, source snippets, and separate instructions interrupts the editing flow. IntentPin turns that context into persistent notes directly from visual selections, without writing metadata into your project.
+
+## Features
+
+- Pin multiline notes and questions to exact character ranges.
+- Follow edits with extmarks and recover moved code using selected text and surrounding context.
+- Spot missing anchors through consistent gutter, manager, and preview warnings.
+- Read one note with temporary virtual lines or a floating hover window.
+- Expand every note in the current file without covering source code.
+- Review, edit, include, exclude, delete, navigate, and export notes from a floating manager.
+- Export relative or absolute paths with built-in English, Portuguese, Spanish, or custom instructions.
+- Keep all IntentPin state outside the source repository.
 
 ## Requirements
 
@@ -15,14 +38,14 @@ IntentPin keeps notes outside your repository, follows selected code with extmar
 - [nui.nvim](https://github.com/MunifTanjim/nui.nvim)
 - A clipboard provider is recommended, but exports are also written to the unnamed register
 
-## LazyVim installation
+## Installation
 
-While developing locally, create `lua/plugins/intentpin.lua` in your LazyVim config:
+With lazy.nvim or LazyVim, create `lua/plugins/intentpin.lua`:
 
 ```lua
 return {
   {
-    dir = "/home/guilherme/projects/intentpin.nvim/main",
+    "Guirebello/intentpin.nvim",
     dependencies = {
       "MunifTanjim/nui.nvim",
     },
@@ -33,12 +56,12 @@ return {
         mode = "virtual_lines", -- or "floating_window"
       },
       editor = {
-        spell = true,
-        spelllang = "pt_br,en_us",
+        spell = false,
+        diagnostics = false,
+        completion = false,
       },
       export = {
-        instruction_language = "custom",
-        custom_instruction = "Implemente as alterações descritas abaixo.",
+        instruction_language = "pt-BR",
       },
     },
     keys = {
@@ -57,10 +80,11 @@ return {
 }
 ```
 
-After publishing the repository, replace `dir` with:
+For local development, replace the repository string with:
 
 ```lua
-"Guirebello/intentpin.nvim"
+dir = "/path/to/intentpin.nvim",
+name = "intentpin.nvim",
 ```
 
 ## Workflow
@@ -73,6 +97,10 @@ After publishing the repository, replace `dir` with:
 `<Esc>` and `<C-c>` in the note editor only return to Normal mode. Close explicitly with `q` or `:q`.
 
 Spellcheck in the note editor is disabled by default. Enable it with `editor.spell = true`; optionally set `editor.spelllang` to the languages Neovim should use. While the editor is open, native spell commands such as `]s`, `[s`, and `z=` remain available.
+
+Markdown diagnostics are also disabled by default in the note editor, preventing markdownlint or an attached LSP from treating a short note as a standalone document. Set `editor.diagnostics = true` to enable them.
+
+Automatic completion is disabled by default in the note editor, including Neovim's built-in autocomplete, `nvim-cmp`, and `blink.cmp`. Set `editor.completion = true` to preserve the completion behavior from your regular buffers.
 
 By default, the selected range gets only a gutter sign. `:IntentPin hover` temporarily highlights the exact range and shows its comment with the configured renderer. The comment disappears when the cursor moves, Insert mode starts, or the command is repeated.
 
@@ -173,6 +201,7 @@ require("intentpin").setup({
     spell = false,
     spelllang = nil, -- for example: "pt_br,en_us"
     diagnostics = false, -- markdownlint/LSP diagnostics in the note editor
+    completion = false, -- built-in completion, nvim-cmp, and blink.cmp
   },
   manager = {
     width = 0.88,
@@ -221,4 +250,8 @@ Run the headless test suite:
 make test
 ```
 
-The tests cover export formatting, JSON persistence, re-anchoring, visual selection capture, note creation, gutter-only rendering, both hover modes, editor mode changes, the NUI manager lifecycle, and command registration.
+The tests cover export formatting, JSON persistence, bulk inclusion, re-anchoring and recovery reports, visual selection capture, note creation, gutter rendering, both hover modes, expanded notes, editor behavior, diagnostics, the NUI manager and help lifecycle, orphan warnings, and command registration.
+
+## License
+
+Licensed under the Apache License 2.0. See [LICENSE](LICENSE) and [NOTICE](NOTICE).

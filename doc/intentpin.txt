@@ -25,14 +25,21 @@ Requires Neovim >= 0.11.2 and MunifTanjim/nui.nvim.
   require("intentpin").setup({
     inline = { virtual_text = false, highlight_range = false },
     hover = { mode = "virtual_lines", width = 72 },
-    editor = { spell = true, spelllang = "pt_br,en_us" },
+    editor = {
+      spell = false,
+      spelllang = nil,
+      diagnostics = false,
+      completion = false,
+    },
     export = { instruction_language = "en" },
   })
 <
 
 See the README for every option and a complete LazyVim plugin specification.
 The editor leaves Insert mode with <Esc> or <C-c> and closes explicitly with q
-or :q. Spellcheck is disabled by default.
+or :q. Spellcheck, diagnostics, and automatic completion are disabled by
+default. Set editor.completion to true to preserve the completion behavior
+from regular buffers.
 
 ==============================================================================
 3. COMMANDS                                              *intentpin-commands*
@@ -59,9 +66,18 @@ or :q. Spellcheck is disabled by default.
 Hover modes: "virtual_lines" inserts temporary screen lines without covering
 source code; "floating_window" opens a compact popup near the cursor.
 
+                                                         *:IntentPin-expand*
+:IntentPin expand {mode}    Show every note in the current file as persistent
+                            virtual lines. Modes: show, hide, toggle. The
+                            default is toggle.
+
+                                                       *:IntentPin-reanchor*
+:IntentPin reanchor         Retry anchors in loaded project files and report
+                            how many were checked, recovered, or remain missing.
+
                                                          *:IntentPin-inline*
-:IntentPin inline {mode}    Control persistent gutter markers. Modes: show,
-                            hide, toggle.
+:IntentPin inline {mode}    Control persistent gutter signs, virtual text, and
+                            range highlights. Modes: show, hide, toggle.
 
                                                            *:IntentPin-next*
 :IntentPin next             Jump to the next note, wrapping at the end.
@@ -81,11 +97,12 @@ source code; "floating_window" opens a compact popup near the cursor.
 4. MANAGER                                              *intentpin-manager*
 
 <CR>       Jump to code                  <Space>  Toggle inclusion
+a          Include all                   u        Exclude all
 e          Edit                          d        Delete
 D          Delete all                    y        Copy current
 Y          Copy checked                   gY       Copy checked, absolute paths
 A          Copy all                      p        Toggle preview
-r          Refresh anchors               ?        Show help
+r          Retry broken anchors          ?        Open persistent help
 q/<Esc>    Close
 
 ==============================================================================
@@ -101,8 +118,7 @@ The instruction prepended to copied notes can be customized with:
 
 >lua
   export = {
-    instruction_language = "custom",
-    custom_instruction = "Implemente as alterações descritas abaixo.",
+    instruction_language = "pt-BR",
   }
 <
 
