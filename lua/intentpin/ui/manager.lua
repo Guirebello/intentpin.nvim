@@ -63,8 +63,10 @@ local function render_preview()
     string.format("%s:%s", note.file, util.range_label(note.range)),
     note.included and "Included in checked exports" or "Excluded from checked exports",
   }
+  local warning_row
   if anchor.is_orphaned(ui.root, note.id) then
     lines[#lines + 1] = "Anchor needs attention: the original code was not found."
+    warning_row = #lines
   end
   lines[#lines + 1] = ""
   lines[#lines + 1] = "Selected code"
@@ -86,6 +88,12 @@ local function render_preview()
     end_col = #lines[2],
     hl_group = note.included and "IntentPinIncluded" or "IntentPinExcluded",
   })
+  if warning_row then
+    vim.api.nvim_buf_set_extmark(ui.preview.bufnr, namespace, warning_row - 1, 0, {
+      end_col = #lines[warning_row],
+      hl_group = "IntentPinOrphan",
+    })
+  end
 end
 
 local function render_list(focus_id)
@@ -113,16 +121,17 @@ local function render_list(focus_id)
         last_file = note.file
       end
       local checked = note.included and "[x]" or "[ ]"
-      local warning = anchor.is_orphaned(ui.root, note.id) and " !" or ""
+      local orphaned = anchor.is_orphaned(ui.root, note.id)
+      local warning = orphaned and "!" or " "
       lines[#lines + 1] = string.format(
-        "    %s %-10s %s%s",
+        "    %s %s %-10s %s",
         checked,
+        warning,
         "L" .. util.range_label(note.range),
-        util.summary(note.comment, 70),
-        warning
+        util.summary(note.comment, 70)
       )
       ui.row_to_id[#lines] = note.id
-      note_rows[#note_rows + 1] = { row = #lines, included = note.included }
+      note_rows[#note_rows + 1] = { row = #lines, included = note.included, orphaned = orphaned }
     end
   end
 
@@ -139,6 +148,12 @@ local function render_list(focus_id)
       end_col = 7,
       hl_group = item.included and "IntentPinIncluded" or "IntentPinExcluded",
     })
+    if item.orphaned then
+      vim.api.nvim_buf_set_extmark(ui.list.bufnr, namespace, item.row - 1, 8, {
+        end_col = 9,
+        hl_group = "IntentPinOrphan",
+      })
+    end
   end
 
   if vim.api.nvim_win_is_valid(ui.list.winid) then

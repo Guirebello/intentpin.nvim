@@ -143,7 +143,7 @@ require("intentpin").setup({
   inline = {
     enabled = true,
     sign = "󰆉",
-    orphan_sign = "?",
+    orphan_sign = "!",
     virtual_text = false,
     max_length = 60,
     highlight_range = false,

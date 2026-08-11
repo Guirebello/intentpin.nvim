@@ -325,6 +325,85 @@ test("opens and closes the NUI manager", function()
   equal(false, manager.is_open())
 end)
 
+test("shows orphan warnings beside manager checkboxes", function()
+  local project_dir = vim.fs.joinpath(temp, "orphan-manager-project")
+  local source_dir = vim.fs.joinpath(project_dir, "src")
+  vim.fn.mkdir(vim.fs.joinpath(project_dir, ".git"), "p")
+  vim.fn.mkdir(source_dir, "p")
+
+  local orphan = note({
+    id = "orphan-manager",
+    comment = string.rep("Long comment ", 10),
+  })
+  require("intentpin.store").add(project_dir, orphan)
+
+  local source_buf = vim.api.nvim_create_buf(true, false)
+  vim.api.nvim_buf_set_name(source_buf, vim.fs.joinpath(source_dir, "example.lua"))
+  vim.api.nvim_buf_set_lines(source_buf, 0, -1, false, { "before", "different", "after" })
+  vim.api.nvim_win_set_buf(0, source_buf)
+  require("intentpin.anchor").attach(source_buf, project_dir)
+  truthy(require("intentpin.anchor").is_orphaned(project_dir, orphan.id))
+  local anchor_namespace = vim.api.nvim_get_namespaces().intentpin
+  local anchor_marks = vim.api.nvim_buf_get_extmarks(source_buf, anchor_namespace, 0, -1, { details = true })
+  equal(1, #anchor_marks)
+  equal("!", vim.trim(anchor_marks[1][4].sign_text), "orphan gutter signs should match manager warnings")
+
+  local manager = require("intentpin.ui.manager")
+  manager.open(project_dir, { preview = true, force = true })
+
+  local list_buf
+  local preview_buf
+  for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+    if vim.api.nvim_buf_is_valid(buf) then
+      if vim.bo[buf].filetype == "intentpin" then
+        list_buf = buf
+      elseif vim.bo[buf].filetype == "intentpin-preview" then
+        preview_buf = buf
+      end
+    end
+  end
+  truthy(list_buf, "manager list buffer was not found")
+  truthy(preview_buf, "manager preview buffer was not found")
+
+  local lines = vim.api.nvim_buf_get_lines(list_buf, 0, -1, false)
+  local note_row
+  for row, line in ipairs(lines) do
+    if line:find("[x] ! L2", 1, true) then
+      note_row = row
+      break
+    end
+  end
+  truthy(note_row, "orphan warning should be visible beside the checkbox")
+
+  local manager_namespace = vim.api.nvim_get_namespaces()["intentpin-manager"]
+  local extmarks = vim.api.nvim_buf_get_extmarks(list_buf, manager_namespace, 0, -1, { details = true })
+  local warning_is_highlighted = false
+  for _, mark in ipairs(extmarks) do
+    local details = mark[4]
+    if mark[2] == note_row - 1 and mark[3] == 8 and details.hl_group == "IntentPinOrphan" then
+      warning_is_highlighted = details.end_col == 9
+      break
+    end
+  end
+  truthy(warning_is_highlighted, "orphan warning should use IntentPinOrphan")
+
+  local preview_lines = vim.api.nvim_buf_get_lines(preview_buf, 0, -1, false)
+  equal("Anchor needs attention: the original code was not found.", preview_lines[3])
+  local preview_marks = vim.api.nvim_buf_get_extmarks(preview_buf, manager_namespace, 0, -1, { details = true })
+  local preview_warning_is_highlighted = false
+  for _, mark in ipairs(preview_marks) do
+    local details = mark[4]
+    if mark[2] == 2 and mark[3] == 0 and details.hl_group == "IntentPinOrphan" then
+      preview_warning_is_highlighted = details.end_col == #preview_lines[3]
+      break
+    end
+  end
+  truthy(preview_warning_is_highlighted, "preview warning should use IntentPinOrphan")
+
+  manager.close()
+  vim.api.nvim_buf_delete(source_buf, { force = true })
+end)
+
 test("registers the IntentPin command", function()
   truthy(vim.fn.exists(":IntentPin") == 2)
 end)
