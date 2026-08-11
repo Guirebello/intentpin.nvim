@@ -23,6 +23,8 @@ M.defaults = {
     width = 0.62,
     height = 0.32,
     border = "rounded",
+    spell = false,
+    spelllang = nil,
   },
   manager = {
     width = 0.88,
@@ -52,6 +54,16 @@ function M.setup(opts)
 
   if type(M.options.storage.path) ~= "string" or M.options.storage.path == "" then
     error("IntentPin: storage.path must be a non-empty string")
+  end
+
+  if type(M.options.editor.spell) ~= "boolean" then
+    error("IntentPin: editor.spell must be a boolean")
+  end
+  if
+    M.options.editor.spelllang ~= nil
+    and (type(M.options.editor.spelllang) ~= "string" or M.options.editor.spelllang == "")
+  then
+    error("IntentPin: editor.spelllang must be a non-empty string")
   end
 
   return M.options

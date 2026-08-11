@@ -26,7 +26,14 @@ return {
     dependencies = {
       "MunifTanjim/nui.nvim",
     },
-    opts = {},
+    event = { "BufReadPost", "BufNewFile" },
+    cmd = "IntentPin",
+    opts = {
+      editor = {
+        spell = true,
+        spelllang = "pt_br,en_us",
+      },
+    },
     keys = {
       { "<leader>ia", "<cmd>IntentPin add<cr>", mode = "x", desc = "Add IntentPin" },
       { "<leader>ii", "<cmd>IntentPin open<cr>", desc = "IntentPin Notes" },
@@ -54,7 +61,9 @@ After publishing the repository, replace `dir` with:
 3. Save with `<C-s>`.
 4. Open `:IntentPin open` to review, include, edit, delete, navigate, and export notes.
 
-`<Esc>` in the note editor only returns to Normal mode. Close explicitly with `q`, `:q`, or `<C-c>`.
+`<Esc>` and `<C-c>` in the note editor only return to Normal mode. Close explicitly with `q` or `:q`.
+
+Spellcheck in the note editor is disabled by default. Enable it with `editor.spell = true`; optionally set `editor.spelllang` to the languages Neovim should use. While the editor is open, native spell commands such as `]s`, `[s`, and `z=` remain available.
 
 By default, the selected range gets only a gutter sign. `:IntentPin hover` temporarily highlights the exact range and inserts a comment card below it using virtual lines. Source code is shifted visually rather than covered, and the card disappears when the cursor moves, Insert mode starts, or the command is repeated.
 
@@ -137,6 +146,8 @@ require("intentpin").setup({
     width = 0.62,
     height = 0.32,
     border = "rounded",
+    spell = false,
+    spelllang = nil, -- for example: "pt_br,en_us"
   },
   manager = {
     width = 0.88,

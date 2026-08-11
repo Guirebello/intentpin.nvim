@@ -25,11 +25,14 @@ Requires Neovim >= 0.11.2 and MunifTanjim/nui.nvim.
   require("intentpin").setup({
     inline = { virtual_text = false, highlight_range = false },
     hover = { width = 72 },
+    editor = { spell = true, spelllang = "pt_br,en_us" },
     export = { instruction_language = "en" },
   })
 <
 
 See the README for every option and a complete LazyVim plugin specification.
+The editor leaves Insert mode with <Esc> or <C-c> and closes explicitly with q
+or :q. Spellcheck is disabled by default.
 
 ==============================================================================
 3. COMMANDS                                              *intentpin-commands*

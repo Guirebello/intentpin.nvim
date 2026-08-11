@@ -36,7 +36,6 @@ end
 
 local temp = vim.fn.tempname()
 vim.fn.mkdir(temp, "p")
-require("intentpin").setup({ storage = { path = temp } })
 
 local function note(overrides)
   return vim.tbl_deep_extend("force", {
@@ -56,6 +55,32 @@ local function note(overrides)
     updated_at = "2026-01-01T00:00:00Z",
   }, overrides or {})
 end
+
+test("attaches signs to buffers that were open before setup", function()
+  require("intentpin.config").setup({ storage = { path = temp } })
+
+  local project_dir = vim.fs.joinpath(temp, "late-setup-project")
+  local source_dir = vim.fs.joinpath(project_dir, "src")
+  vim.fn.mkdir(vim.fs.joinpath(project_dir, ".git"), "p")
+  vim.fn.mkdir(source_dir, "p")
+
+  local store = require("intentpin.store")
+  store.reset()
+  store.add(project_dir, note())
+
+  local buf = vim.api.nvim_create_buf(true, false)
+  vim.api.nvim_buf_set_name(buf, vim.fs.joinpath(source_dir, "example.lua"))
+  vim.api.nvim_buf_set_lines(buf, 0, -1, false, { "before", "target", "after" })
+  vim.api.nvim_win_set_buf(0, buf)
+
+  require("intentpin").setup({ storage = { path = temp } })
+
+  local namespace = vim.api.nvim_get_namespaces().intentpin
+  local extmarks = vim.api.nvim_buf_get_extmarks(buf, namespace, 0, -1, { details = true })
+  equal(1, #extmarks, "setup should render persisted signs in already-open buffers")
+  truthy(extmarks[1][4].sign_text)
+  vim.api.nvim_buf_delete(buf, { force = true })
+end)
 
 test("exports sorted compact notes and multiline comments", function()
   local exporter = require("intentpin.export")
@@ -197,6 +222,17 @@ test("keeps the note editor open when leaving insert mode", function()
   vim.wait(20)
   equal(false, editor.is_open())
 
+  editor.open({
+    title = "Editor Ctrl-C test",
+    on_submit = function() end,
+  })
+  equal({}, vim.fn.maparg("<C-c>", "i", false, true), "editor must not map Ctrl-C to close")
+  vim.cmd.stopinsert()
+  truthy(editor.is_open(), "editor closed when entering normal mode")
+  vim.api.nvim_feedkeys("q", "x", false)
+  vim.wait(20)
+  equal(false, editor.is_open())
+
   local cancelled = false
   editor.open({
     title = "Editor quit test",
@@ -210,6 +246,36 @@ test("keeps the note editor open when leaving insert mode", function()
   vim.wait(20)
   equal(false, editor.is_open())
   equal(true, cancelled)
+end)
+
+test("configures spellcheck in the note editor", function()
+  local config = require("intentpin.config")
+  local editor = require("intentpin.ui.editor")
+
+  config.setup({
+    storage = { path = temp },
+    editor = { spell = true, spelllang = "en_us" },
+  })
+  editor.open({
+    title = "Editor spell test",
+    on_submit = function() end,
+  })
+  equal(true, vim.wo.spell)
+  equal("en_us", vim.bo.spelllang)
+  vim.cmd.stopinsert()
+  vim.api.nvim_feedkeys("q", "x", false)
+  vim.wait(20)
+
+  config.setup({ storage = { path = temp }, editor = { spell = false } })
+  vim.wo.spell = true
+  editor.open({
+    title = "Editor spell disabled test",
+    on_submit = function() end,
+  })
+  equal(false, vim.wo.spell)
+  vim.cmd.stopinsert()
+  vim.api.nvim_feedkeys("q", "x", false)
+  vim.wait(20)
 end)
 
 test("opens and closes the NUI manager", function()
