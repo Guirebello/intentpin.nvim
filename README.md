@@ -6,6 +6,8 @@ IntentPin keeps notes outside your repository, follows selected code with extmar
 
 > [!NOTE]
 > IntentPin.nvim is currently an alpha. The storage format is versioned, but may receive migrations before 1.0.
+>
+> This worktree contains the **virtual-lines hover experiment**. Hovered comments take screen rows below the selected range and never cover source code.
 
 ## Requirements
 
@@ -20,7 +22,7 @@ While developing locally, create `lua/plugins/intentpin.lua` in your LazyVim con
 ```lua
 return {
   {
-    dir = "/home/guilherme/projects/intentpin.nvim",
+    dir = "/home/guilherme/projects/intentpin.nvim/hover-virtual-lines",
     dependencies = {
       "MunifTanjim/nui.nvim",
     },
@@ -28,6 +30,7 @@ return {
     keys = {
       { "<leader>ia", "<cmd>IntentPin add<cr>", mode = "x", desc = "Add IntentPin" },
       { "<leader>ii", "<cmd>IntentPin open<cr>", desc = "IntentPin Notes" },
+      { "<leader>ih", "<cmd>IntentPin hover<cr>", desc = "Hover IntentPin" },
       { "<leader>is", "<cmd>IntentPin show<cr>", desc = "Show IntentPin at Cursor" },
       { "<leader>ie", "<cmd>IntentPin edit<cr>", desc = "Edit IntentPin at Cursor" },
       { "<leader>iy", "<cmd>IntentPin copy checked<cr>", desc = "Copy Checked IntentPins" },
@@ -51,7 +54,11 @@ After publishing the repository, replace `dir` with:
 3. Save with `<C-s>`.
 4. Open `:IntentPin open` to review, include, edit, delete, navigate, and export notes.
 
-The selected range gets an inline sign and a one-line summary. Both are configurable. Blockwise visual selections are intentionally rejected for now because a rectangular selection cannot be represented safely by a single range.
+`<Esc>` in the note editor only returns to Normal mode. Close explicitly with `q`, `:q`, or `<C-c>`.
+
+By default, the selected range gets only a gutter sign. `:IntentPin hover` temporarily highlights the exact range and inserts a comment card below it using virtual lines. Source code is shifted visually rather than covered, and the card disappears when the cursor moves, Insert mode starts, or the command is repeated.
+
+Blockwise visual selections are intentionally rejected for now because a rectangular selection cannot be represented safely by a single range.
 
 ## Commands
 
@@ -61,6 +68,10 @@ The selected range gets an inline sign and a one-line summary. Both are configur
 :IntentPin show
 :IntentPin edit
 :IntentPin delete
+:IntentPin hover
+:IntentPin inline show
+:IntentPin inline hide
+:IntentPin inline toggle
 :IntentPin next
 :IntentPin prev
 :IntentPin clear
@@ -73,6 +84,15 @@ The selected range gets an inline sign and a one-line summary. Both are configur
 ```
 
 `show`, `edit`, `delete`, and `copy current` operate on the note under the cursor. When ranges overlap, IntentPin asks which note to use.
+
+## Virtual-lines hover
+
+The hover deliberately avoids a floating window. It uses temporary extmarks for two things:
+
+- `IntentPinActiveRange` highlights every selected character.
+- `virt_lines` renders a wrapped comment card immediately after the range without modifying the file or covering code.
+
+Use `<leader>ih` or `:IntentPin hover` while the cursor is inside a pinned range. `K` remains untouched for LSP hover. Use `:IntentPin inline hide` when you also want to hide persistent gutter signs.
 
 ## Floating manager
 
@@ -105,10 +125,13 @@ require("intentpin").setup({
     enabled = true,
     sign = "󰆉",
     orphan_sign = "?",
-    virtual_text = true,
+    virtual_text = false,
     max_length = 60,
-    highlight_range = true,
+    highlight_range = false,
     priority = 120,
+  },
+  hover = {
+    width = 72,
   },
   editor = {
     width = 0.62,
@@ -162,4 +185,4 @@ Run the headless test suite:
 make test
 ```
 
-The tests cover export formatting, JSON persistence, re-anchoring, visual selection capture, note creation, the NUI manager lifecycle, and command registration.
+The tests cover export formatting, JSON persistence, re-anchoring, visual selection capture, note creation, gutter-only rendering, virtual-lines hover, editor mode changes, the NUI manager lifecycle, and command registration.

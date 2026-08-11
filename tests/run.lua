@@ -157,12 +157,59 @@ test("captures a visual selection and creates a note", function()
   local extmarks = vim.api.nvim_buf_get_extmarks(buf, namespace, 0, -1, { details = true })
   equal(1, #extmarks)
   truthy(extmarks[1][4].sign_text)
+  equal(nil, extmarks[1][4].virt_text)
+  equal(nil, extmarks[1][4].hl_group)
 
   vim.api.nvim_buf_set_lines(buf, 0, 0, false, { "inserted before" })
   require("intentpin.anchor").sync(buf)
   equal(1, notes[1].range.start.line)
   equal("target", notes[1].selected_text)
+
+  vim.api.nvim_win_set_cursor(0, { 2, 1 })
+  equal(true, require("intentpin.actions").hover())
+  truthy(require("intentpin.ui.hover").is_open())
+  local hover_namespace = vim.api.nvim_get_namespaces()["intentpin-hover"]
+  local hover_marks = vim.api.nvim_buf_get_extmarks(buf, hover_namespace, 0, -1, { details = true })
+  equal(2, #hover_marks)
+  local has_virtual_lines = false
+  for _, mark in ipairs(hover_marks) do
+    has_virtual_lines = has_virtual_lines or mark[4].virt_lines ~= nil
+  end
+  truthy(has_virtual_lines, "hover should render virtual lines")
+  vim.api.nvim_exec_autocmds("CursorMoved", { buffer = buf })
+  equal(false, require("intentpin.ui.hover").is_open())
+  equal(0, #vim.api.nvim_buf_get_extmarks(buf, hover_namespace, 0, -1, {}))
   vim.api.nvim_buf_delete(buf, { force = true })
+end)
+
+test("keeps the note editor open when leaving insert mode", function()
+  local editor = require("intentpin.ui.editor")
+  editor.open({
+    title = "Editor mode test",
+    on_submit = function() end,
+  })
+  truthy(editor.is_open())
+  local escape = vim.api.nvim_replace_termcodes("<Esc>", true, false, true)
+  vim.api.nvim_feedkeys(escape, "x", false)
+  vim.wait(20)
+  truthy(editor.is_open(), "editor closed when entering normal mode")
+  vim.api.nvim_feedkeys("q", "x", false)
+  vim.wait(20)
+  equal(false, editor.is_open())
+
+  local cancelled = false
+  editor.open({
+    title = "Editor quit test",
+    on_submit = function() end,
+    on_cancel = function()
+      cancelled = true
+    end,
+  })
+  vim.cmd.stopinsert()
+  vim.cmd.quit()
+  vim.wait(20)
+  equal(false, editor.is_open())
+  equal(true, cancelled)
 end)
 
 test("opens and closes the NUI manager", function()

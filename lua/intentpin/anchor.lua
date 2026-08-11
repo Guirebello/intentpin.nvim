@@ -307,8 +307,11 @@ function M.at_cursor(project_root, buf)
   local row = cursor[1] - 1
   local found = {}
   for _, note in ipairs(store.list(project_root)) do
-    if note.file == file and row >= note.range.start.line and row <= note.range["end"].line then
-      found[#found + 1] = note
+    if note.file == file then
+      local range = M.position(buf, note.id) or note.range
+      if row >= range.start.line and row <= range["end"].line then
+        found[#found + 1] = note
+      end
     end
   end
   return found

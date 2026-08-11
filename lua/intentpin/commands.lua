@@ -8,6 +8,8 @@ local commands = {
   "show",
   "edit",
   "delete",
+  "hover",
+  "inline",
   "next",
   "prev",
   "copy",
@@ -22,6 +24,8 @@ local copy_modes = {
   "current",
   "current-absolute",
 }
+
+local inline_modes = { "show", "hide", "toggle" }
 
 ---@param callback fun()
 local function safely(callback)
@@ -48,6 +52,14 @@ local function execute(args)
     action.edit_at_cursor()
   elseif name == "delete" then
     action.delete_at_cursor()
+  elseif name == "hover" then
+    action.hover()
+  elseif name == "inline" then
+    local mode = args.fargs[2] or "toggle"
+    if not vim.tbl_contains(inline_modes, mode) then
+      error("IntentPin: unknown inline mode: " .. mode)
+    end
+    action.inline(mode)
   elseif name == "next" then
     action.navigate(1)
   elseif name == "prev" then
@@ -75,7 +87,9 @@ end
 ---@return string[]
 local function complete(arglead, cmdline)
   local words = vim.split(cmdline, "%s+", { trimempty = true })
-  local candidates = words[2] == "copy" and copy_modes or commands
+  local candidates = words[2] == "copy" and copy_modes
+    or words[2] == "inline" and inline_modes
+    or commands
   return vim.tbl_filter(function(candidate)
     return candidate:sub(1, #arglead) == arglead
   end, candidates)

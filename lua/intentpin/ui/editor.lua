@@ -21,6 +21,11 @@ function M.close()
   end
 end
 
+---@return boolean
+function M.is_open()
+  return active ~= nil
+end
+
 ---@param opts { title: string, initial?: string, on_submit: fun(value: string), on_cancel?: fun() }
 function M.open(opts)
   M.close()
@@ -41,7 +46,7 @@ function M.open(opts)
       text = {
         top = " " .. opts.title .. " ",
         top_align = "center",
-        bottom = " <C-s> save · q cancel ",
+        bottom = " <C-s> save · q/:q cancel · <Esc> normal mode ",
         bottom_align = "center",
       },
     },
@@ -95,11 +100,24 @@ function M.open(opts)
     vim.schedule(submit)
   end, { noremap = true, nowait = true })
   popup:map("n", "q", cancel, { noremap = true, nowait = true })
-  popup:map("n", "<Esc>", cancel, { noremap = true, nowait = true })
   popup:map("i", "<C-c>", function()
     vim.cmd.stopinsert()
     vim.schedule(cancel)
   end, { noremap = true, nowait = true })
+
+  vim.api.nvim_create_autocmd("BufWipeout", {
+    buffer = popup.bufnr,
+    once = true,
+    callback = function()
+      if not finished then
+        finished = true
+        active = nil
+        if opts.on_cancel then
+          vim.schedule(opts.on_cancel)
+        end
+      end
+    end,
+  })
 
   vim.cmd.startinsert()
 end

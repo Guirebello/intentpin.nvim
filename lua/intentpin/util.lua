@@ -82,4 +82,32 @@ function M.range_equal(left, right)
     and left["end"].character == right["end"].character
 end
 
+---@param value string
+---@param width integer
+---@return string[]
+function M.wrap(value, width)
+  width = math.max(12, width)
+  local result = {}
+  for _, source in ipairs(M.lines(value)) do
+    if source == "" then
+      result[#result + 1] = ""
+    else
+      local current = ""
+      for word in source:gmatch("%S+") do
+        local candidate = current == "" and word or (current .. " " .. word)
+        if vim.fn.strdisplaywidth(candidate) <= width then
+          current = candidate
+        else
+          if current ~= "" then
+            result[#result + 1] = current
+          end
+          current = word
+        end
+      end
+      result[#result + 1] = current
+    end
+  end
+  return #result > 0 and result or { "" }
+end
+
 return M

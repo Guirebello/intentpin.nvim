@@ -13,6 +13,10 @@ local function highlights()
     IntentPinOrphan = { link = "DiagnosticWarn" },
     IntentPinVirtualText = { link = "Comment" },
     IntentPinRange = { link = "LspReferenceText" },
+    IntentPinActiveRange = { link = "Visual" },
+    IntentPinHoverBorder = { link = "FloatBorder" },
+    IntentPinHoverTitle = { link = "Title" },
+    IntentPinHoverText = { link = "NormalFloat" },
   }
   for name, value in pairs(groups) do
     value.default = true
@@ -60,6 +64,11 @@ function M.setup(opts)
       end)
     end,
   })
+end
+
+---@return boolean
+function M.hover()
+  return require("intentpin.actions").hover()
 end
 
 return M

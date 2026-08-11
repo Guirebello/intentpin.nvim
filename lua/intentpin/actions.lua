@@ -216,6 +216,34 @@ function M.copy_at_cursor(absolute)
   end)
 end
 
+---@return boolean
+function M.hover()
+  local project_root = project.current(0)
+  local notes = anchor.at_cursor(project_root, 0)
+  if #notes == 0 then
+    require("intentpin.ui.hover").close()
+    util.notify("No IntentPin note at the cursor", vim.log.levels.WARN)
+    return false
+  end
+  return require("intentpin.ui.hover").toggle(0, notes)
+end
+
+---@param mode "show"|"hide"|"toggle"
+function M.inline(mode)
+  local inline = require("intentpin.config").get().inline
+  if mode == "toggle" then
+    inline.enabled = not inline.enabled
+  else
+    inline.enabled = mode == "show"
+  end
+  if not inline.enabled then
+    require("intentpin.ui.hover").close()
+  end
+  local project_root = project.current(0)
+  anchor.refresh_root(project_root)
+  util.notify("Inline markers " .. (inline.enabled and "shown" or "hidden"))
+end
+
 ---@param direction 1|-1
 function M.navigate(direction)
   local project_root = project.current(0)

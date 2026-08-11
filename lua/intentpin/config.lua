@@ -11,10 +11,13 @@ M.defaults = {
     enabled = true,
     sign = "󰆉",
     orphan_sign = "?",
-    virtual_text = true,
+    virtual_text = false,
     max_length = 60,
-    highlight_range = true,
+    highlight_range = false,
     priority = 120,
+  },
+  hover = {
+    width = 72,
   },
   editor = {
     width = 0.62,

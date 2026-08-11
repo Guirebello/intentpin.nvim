@@ -23,7 +23,8 @@ Requires Neovim >= 0.11.2 and MunifTanjim/nui.nvim.
 
 >lua
   require("intentpin").setup({
-    inline = { virtual_text = true },
+    inline = { virtual_text = false, highlight_range = false },
+    hover = { width = 72 },
     export = { instruction_language = "en" },
   })
 <
@@ -47,6 +48,14 @@ See the README for every option and a complete LazyVim plugin specification.
 
                                                          *:IntentPin-delete*
 :IntentPin delete           Delete the note at the cursor after confirmation.
+
+                                                          *:IntentPin-hover*
+:IntentPin hover            Highlight the pinned range and show its comment in
+                            virtual lines without covering source code.
+
+                                                         *:IntentPin-inline*
+:IntentPin inline {mode}    Control persistent gutter markers. Modes: show,
+                            hide, toggle.
 
                                                            *:IntentPin-next*
 :IntentPin next             Jump to the next note, wrapping at the end.
