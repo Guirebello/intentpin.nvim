@@ -166,11 +166,17 @@ test("captures a visual selection and creates a note", function()
   vim.bo[buf].filetype = "lua"
   vim.api.nvim_win_set_buf(0, buf)
   vim.cmd("normal! gg0v5l")
-  vim.cmd("normal! \27")
+  equal("v", vim.api.nvim_get_mode().mode, "selection should still be active")
 
   local captured = require("intentpin.selection").capture(buf)
   equal("target", captured.selected_text)
   equal("src/example.lua", captured.file)
+
+  vim.cmd("normal! \27gg05lv5h")
+  equal("v", vim.api.nvim_get_mode().mode, "reverse selection should still be active")
+  local reversed = require("intentpin.selection").capture(buf)
+  equal("target", reversed.selected_text, "reverse selections should be normalized")
+  vim.cmd("normal! \27gg0v5l")
 
   local editor = require("intentpin.ui.editor")
   local original_open = editor.open
@@ -181,6 +187,7 @@ test("captures a visual selection and creates a note", function()
   require("intentpin.actions").add()
   editor.open = original_open
   truthy(editor_opts)
+  vim.cmd("normal! \27")
   editor_opts.on_submit("Pin this selection")
 
   local notes = require("intentpin.store").list(captured.root)
