@@ -1,0 +1,84 @@
+*intentpin.txt*                Persistent code intent notes for Neovim
+
+==============================================================================
+CONTENTS                                                     *intentpin-contents*
+
+1. Introduction .............................................. |intentpin|
+2. Setup ................................................ |intentpin-setup|
+3. Commands ............................................ |intentpin-commands|
+4. Manager .............................................. |intentpin-manager|
+5. Storage .............................................. |intentpin-storage|
+
+==============================================================================
+1. INTRODUCTION                                                   *intentpin*
+
+IntentPin attaches editable notes to visual code selections and exports those
+notes as compact change requests for AI coding assistants. Notes are persisted
+outside the project and follow edits through extmarks and content re-anchoring.
+
+Requires Neovim >= 0.11.2 and MunifTanjim/nui.nvim.
+
+==============================================================================
+2. SETUP                                                    *intentpin-setup*
+
+>lua
+  require("intentpin").setup({
+    inline = { virtual_text = true },
+    export = { instruction_language = "en" },
+  })
+<
+
+See the README for every option and a complete LazyVim plugin specification.
+
+==============================================================================
+3. COMMANDS                                              *intentpin-commands*
+
+                                                            *:IntentPin-add*
+:IntentPin add              Add a note to the last visual selection.
+
+                                                           *:IntentPin-open*
+:IntentPin open             Toggle the floating note manager.
+
+                                                           *:IntentPin-show*
+:IntentPin show             Focus the note at the cursor in the manager.
+
+                                                           *:IntentPin-edit*
+:IntentPin edit             Edit the note at the cursor.
+
+                                                         *:IntentPin-delete*
+:IntentPin delete           Delete the note at the cursor after confirmation.
+
+                                                           *:IntentPin-next*
+:IntentPin next             Jump to the next note, wrapping at the end.
+
+                                                           *:IntentPin-prev*
+:IntentPin prev             Jump to the previous note, wrapping at the start.
+
+                                                           *:IntentPin-copy*
+:IntentPin copy {mode}      Copy notes. Modes: checked, checked-absolute, all,
+                            all-absolute, current, current-absolute.
+
+                                                          *:IntentPin-clear*
+:IntentPin clear            Delete every note in the current project.
+
+==============================================================================
+4. MANAGER                                              *intentpin-manager*
+
+<CR>       Jump to code                  <Space>  Toggle inclusion
+e          Edit                          d        Delete
+D          Delete all                    y        Copy current
+Y          Copy checked                   gY       Copy checked, absolute paths
+A          Copy all                      p        Toggle preview
+r          Refresh anchors               ?        Show help
+q/<Esc>    Close
+
+==============================================================================
+5. STORAGE                                              *intentpin-storage*
+
+State is stored in:
+
+  stdpath("state")/intentpin/<sha256-project-root>.json
+
+No IntentPin files are written into the project itself.
+
+vim:tw=78:ts=8:noet:ft=help:norl:
