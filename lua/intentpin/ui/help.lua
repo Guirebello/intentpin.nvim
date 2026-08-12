@@ -1,4 +1,5 @@
 local config = require("intentpin.config")
+local border = require("intentpin.ui.border")
 
 local M = {}
 local namespace = vim.api.nvim_create_namespace("intentpin-help")
@@ -88,15 +89,12 @@ function M.open(return_win)
       width = math.min(vim.o.columns - 4, 68),
       height = math.min(vim.o.lines - 4, #lines),
     },
-    border = {
-      style = config.get().manager.border,
-      text = {
-        top = " IntentPin Help ",
-        top_align = "center",
-        bottom = " ? / q / <Esc> close ",
-        bottom_align = "center",
-      },
-    },
+    border = border.with_text(config.get().manager.border, {
+      top = " IntentPin Help ",
+      top_align = "center",
+      bottom = " ? / q / <Esc> close ",
+      bottom_align = "center",
+    }),
     win_options = {
       wrap = true,
       linebreak = true,

@@ -1,4 +1,5 @@
 local config = require("intentpin.config")
+local border = require("intentpin.ui.border")
 local util = require("intentpin.util")
 
 local M = {}
@@ -44,13 +45,10 @@ function M.open(context)
     relative = "cursor",
     position = { row = 1, col = 1 },
     size = { width = width, height = math.max(1, #lines) },
-    border = {
-      style = opts.border,
-      text = {
-        top = #context.notes == 1 and " IntentPin " or string.format(" IntentPin · %d notes ", #context.notes),
-        top_align = "center",
-      },
-    },
+    border = border.with_text(opts.border, {
+      top = #context.notes == 1 and " IntentPin " or string.format(" IntentPin · %d notes ", #context.notes),
+      top_align = "center",
+    }),
     win_options = {
       wrap = false,
       winhighlight = "Normal:IntentPinHoverText,FloatBorder:IntentPinHoverBorder",

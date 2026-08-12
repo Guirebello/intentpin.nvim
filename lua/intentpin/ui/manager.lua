@@ -1,4 +1,5 @@
 local anchor = require("intentpin.anchor")
+local border_ui = require("intentpin.ui.border")
 local config = require("intentpin.config")
 local help = require("intentpin.ui.help")
 local store = require("intentpin.store")
@@ -208,15 +209,12 @@ function M.open(project_root, opts)
   local list = Popup({
     enter = true,
     focusable = true,
-    border = {
-      style = border,
-      text = {
-        top = " IntentPin ",
-        top_align = "center",
-        bottom = " <CR> jump · <Space> include · e edit · d delete · ? help ",
-        bottom_align = "center",
-      },
-    },
+    border = border_ui.with_text(border, {
+      top = " IntentPin ",
+      top_align = "center",
+      bottom = " <CR> jump · <Space> include · e edit · d delete · ? help ",
+      bottom_align = "center",
+    }),
     win_options = {
       cursorline = true,
       wrap = false,
@@ -226,10 +224,7 @@ function M.open(project_root, opts)
   local preview = Popup({
     enter = false,
     focusable = false,
-    border = {
-      style = border,
-      text = { top = " Preview ", top_align = "center" },
-    },
+    border = border_ui.with_text(border, { top = " Preview ", top_align = "center" }),
     win_options = {
       wrap = true,
       linebreak = true,

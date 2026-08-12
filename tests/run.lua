@@ -639,6 +639,84 @@ test("shows orphan warnings beside manager checkboxes", function()
   vim.api.nvim_buf_delete(source_buf, { force = true })
 end)
 
+test("supports a borderless note editor", function()
+  local config = require("intentpin.config")
+  local editor = require("intentpin.ui.editor")
+  config.setup({
+    storage = { path = temp },
+    editor = { border = "none" },
+  })
+
+  local ok, err = pcall(editor.open, {
+    title = "Borderless editor test",
+    on_submit = function() end,
+  })
+  truthy(ok, tostring(err))
+
+  vim.cmd.stopinsert()
+  vim.api.nvim_feedkeys("q", "x", false)
+  vim.wait(20)
+  equal(false, editor.is_open())
+end)
+
+test("supports a borderless note manager and help", function()
+  local config = require("intentpin.config")
+  local manager = require("intentpin.ui.manager")
+  local help = require("intentpin.ui.help")
+  config.setup({
+    storage = { path = temp },
+    manager = { border = "none" },
+  })
+
+  local ok, err = pcall(manager.open, "/work/borderless-manager-project", {
+    preview = true,
+    force = true,
+  })
+  truthy(ok, tostring(err))
+  truthy(manager.is_open())
+
+  vim.api.nvim_feedkeys("?", "x", false)
+  vim.wait(50, function()
+    return help.is_open()
+  end)
+  truthy(help.is_open(), "borderless manager help should open")
+  help.close()
+  manager.close()
+end)
+
+test("supports a borderless floating hover", function()
+  local config = require("intentpin.config")
+  local floating_hover = require("intentpin.ui.hover.floating_window")
+  config.setup({
+    storage = { path = temp },
+    hover = { mode = "floating_window", border = "none" },
+  })
+
+  local popup
+  local ok, err = pcall(function()
+    popup = floating_hover.open({
+      buf = vim.api.nvim_get_current_buf(),
+      notes = { note() },
+    })
+  end)
+  truthy(ok, tostring(err))
+  truthy(floating_hover.is_open(popup))
+  floating_hover.close(popup)
+end)
+
+test("omits titles for NUI border styles without text support", function()
+  local border = require("intentpin.ui.border")
+  local text = { top = " IntentPin " }
+
+  for _, style in ipairs({ "none", "shadow" }) do
+    equal({ style = style }, border.with_text(style, text))
+  end
+
+  for _, style in ipairs({ "default", "double", "rounded", "single", "solid" }) do
+    equal({ style = style, text = text }, border.with_text(style, text))
+  end
+end)
+
 test("registers the IntentPin command", function()
   truthy(vim.fn.exists(":IntentPin") == 2)
 end)

@@ -1,4 +1,5 @@
 local config = require("intentpin.config")
+local border = require("intentpin.ui.border")
 local util = require("intentpin.util")
 
 local M = {}
@@ -70,15 +71,12 @@ function M.open(opts)
     relative = "editor",
     position = "50%",
     size = { width = width, height = height },
-    border = {
-      style = editor_opts.border,
-      text = {
-        top = " " .. opts.title .. " ",
-        top_align = "center",
-        bottom = " <C-s> save · q/:q cancel · <Esc>/<C-c> normal mode ",
-        bottom_align = "center",
-      },
-    },
+    border = border.with_text(editor_opts.border, {
+      top = " " .. opts.title .. " ",
+      top_align = "center",
+      bottom = " <C-s> save · q/:q cancel · <Esc>/<C-c> normal mode ",
+      bottom_align = "center",
+    }),
     win_options = {
       winhighlight = "Normal:IntentPinNormal,FloatBorder:IntentPinBorder",
       wrap = true,

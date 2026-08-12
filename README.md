@@ -192,11 +192,15 @@ require("intentpin").setup({
     mode = "virtual_lines", -- virtual_lines or floating_window
     width = 72,
     max_height = 14, -- floating_window only
+    -- NUI built-ins: default, double, none, rounded, shadow, single, or solid.
+    -- none and shadow cannot display border titles.
     border = "rounded", -- floating_window only
   },
   editor = {
     width = 0.62,
     height = 0.32,
+    -- NUI built-ins: default, double, none, rounded, shadow, single, or solid.
+    -- none and shadow hide the title and shortcut hints shown in the border.
     border = "rounded",
     spell = false,
     spelllang = nil, -- for example: "pt_br,en_us"
@@ -206,6 +210,8 @@ require("intentpin").setup({
   manager = {
     width = 0.88,
     height = 0.76,
+    -- NUI built-ins: default, double, none, rounded, shadow, single, or solid.
+    -- none and shadow hide the titles and shortcut hints shown in the borders.
     border = "rounded",
     preview = true,
   },

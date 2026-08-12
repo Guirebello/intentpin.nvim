@@ -190,11 +190,15 @@ require("intentpin").setup({
     mode = "virtual_lines", -- virtual_lines ou floating_window
     width = 72,
     max_height = 14, -- somente floating_window
+    -- Estilos nativos do NUI: default, double, none, rounded, shadow, single ou solid.
+    -- none e shadow não exibem títulos na borda.
     border = "rounded", -- somente floating_window
   },
   editor = {
     width = 0.62,
     height = 0.32,
+    -- Estilos nativos do NUI: default, double, none, rounded, shadow, single ou solid.
+    -- none e shadow ocultam o título e as dicas de atalhos exibidos na borda.
     border = "rounded",
     spell = false,
     spelllang = nil, -- exemplo: "pt_br,en_us"
@@ -204,6 +208,8 @@ require("intentpin").setup({
   manager = {
     width = 0.88,
     height = 0.76,
+    -- Estilos nativos do NUI: default, double, none, rounded, shadow, single ou solid.
+    -- none e shadow ocultam os títulos e as dicas de atalhos exibidos nas bordas.
     border = "rounded",
     preview = true,
   },
