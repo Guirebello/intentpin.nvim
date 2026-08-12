@@ -8,9 +8,7 @@ O IntentPin permite selecionar um trecho, anexar uma nota ou pergunta e manter e
 
 ## Demonstração
 
-[![Demonstração do fluxo do IntentPin.nvim](intentpin-neovim-demo.png)](https://github.com/Guirebello/intentpin.nvim/raw/refs/heads/main/intentpin-neovim-demo.mp4)
-
-[▶ Assista à demonstração completa do fluxo (1:09)](https://github.com/Guirebello/intentpin.nvim/raw/refs/heads/main/intentpin-neovim-demo.mp4)
+https://github.com/user-attachments/assets/5c136e66-1941-4c97-8d8c-5eaf7464e4a2
 
 > [!NOTE]
 > O IntentPin.nvim é experimental. As notas ficam no diretório de estado do Neovim, e o formato usado para armazená-las pode mudar antes da versão 1.0.
@@ -35,8 +33,10 @@ Ferramentas de IA funcionam melhor com contexto preciso, mas reunir caminhos, in
 ## Requisitos
 
 - Neovim 0.11.2 ou mais recente
-- [nui.nvim](https://github.com/MunifTanjim/nui.nvim)
-- Um clipboard provider é recomendado, mas o registro sem nome também recebe os exports
+- [nui.nvim](https://github.com/MunifTanjim/nui.nvim), instalado automaticamente pela configuração fornecida para lazy.nvim
+- Um clipboard provider é opcional; sem ele, os exports ainda são escritos no registro sem nome do Neovim
+
+Nenhuma dependência adicional de runtime precisa ser instalada manualmente ao usar a configuração fornecida para lazy.nvim ou LazyVim.
 
 ## Instalação
 

@@ -8,9 +8,7 @@ IntentPin lets you select code, attach a note or question, and keep that intent 
 
 ## Demo
 
-[![IntentPin.nvim workflow demo](intentpin-neovim-demo.png)](https://github.com/Guirebello/intentpin.nvim/raw/refs/heads/main/intentpin-neovim-demo.mp4)
-
-[▶ Watch the complete workflow demo (1:09)](https://github.com/Guirebello/intentpin.nvim/raw/refs/heads/main/intentpin-neovim-demo.mp4)
+https://github.com/user-attachments/assets/5c136e66-1941-4c97-8d8c-5eaf7464e4a2
 
 > [!NOTE]
 > IntentPin.nvim is experimental. Notes are stored in Neovim's state directory, and the stored-note format may change before version 1.0.
@@ -35,8 +33,10 @@ AI coding tools work better with precise context, but collecting file paths, lin
 ## Requirements
 
 - Neovim 0.11.2 or newer
-- [nui.nvim](https://github.com/MunifTanjim/nui.nvim)
-- A clipboard provider is recommended, but exports are also written to the unnamed register
+- [nui.nvim](https://github.com/MunifTanjim/nui.nvim), installed automatically by the provided lazy.nvim configuration
+- A clipboard provider is optional; without one, exports are still written to Neovim's unnamed register
+
+No additional runtime dependencies need to be installed manually when using the provided lazy.nvim or LazyVim configuration.
 
 ## Installation
 
