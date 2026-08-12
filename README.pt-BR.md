@@ -19,6 +19,8 @@ https://github.com/user-attachments/assets/5c136e66-1941-4c97-8d8c-5eaf7464e4a2
 
 Ferramentas de IA funcionam melhor com contexto preciso, mas reunir caminhos, intervalos de linhas, trechos de código e instruções separadas interrompe o fluxo de edição. O IntentPin transforma esse contexto em notas persistentes criadas diretamente a partir de seleções visuais, sem gravar metadados no projeto.
 
+Gostou da ideia e também usa VS Code? Instale o [IntentPin pelo Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=Guirebello.intentpin).
+
 ## Recursos
 
 - Anexe notas e perguntas multilinha a intervalos exatos de caracteres.
@@ -253,6 +255,12 @@ Execute a suíte headless:
 ```bash
 make test
 ```
+
+## Roadmap
+
+- Filtros por arquivo e estado.
+- Histórico persistente de notas, como um fluxo local de PR ou MR, para acompanhar cada comentário e a mudança correspondente ao longo do tempo.
+- Tipos de nota para diferentes prompts, como dúvidas e pedidos de mudança, com um atalho próprio para cada tipo.
 
 ## Licença
 

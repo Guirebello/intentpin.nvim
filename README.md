@@ -19,6 +19,8 @@ https://github.com/user-attachments/assets/5c136e66-1941-4c97-8d8c-5eaf7464e4a2
 
 AI coding tools work better with precise context, but collecting file paths, line ranges, source snippets, and separate instructions interrupts the editing flow. IntentPin turns that context into persistent notes directly from visual selections, without writing metadata into your project.
 
+Like the idea and also use VS Code? Install [IntentPin from the Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=Guirebello.intentpin).
+
 ## Features
 
 - Pin multiline notes and questions to exact character ranges.
@@ -257,6 +259,12 @@ make test
 ```
 
 The tests cover export formatting, JSON persistence, bulk inclusion, re-anchoring and recovery reports, visual selection capture, note creation, gutter rendering, both hover modes, expanded notes, editor behavior, diagnostics, the NUI manager and help lifecycle, orphan warnings, and command registration.
+
+## Roadmap
+
+- Filter notes by file and state.
+- Persistent note history, like a local PR or MR workflow, so you can follow each comment and its corresponding change over time.
+- Note types for different prompts, such as questions and change requests, each with its own shortcut.
 
 ## License
 
